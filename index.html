@@ -233,7 +233,7 @@ p { margin: 0; }
 
 .bottom-nav {
   position: fixed; left: 0; right: 0; bottom: 0; z-index: 20;
-  display: grid; grid-template-columns: repeat(4, 1fr);
+  display: grid; grid-auto-flow: column; grid-auto-columns: minmax(0, 1fr);
   padding: 6px 8px calc(6px + env(safe-area-inset-bottom, 0px));
   background: var(--card); border-top: 2px solid var(--rule);
 }
@@ -243,6 +243,12 @@ p { margin: 0; }
   font-size: 12px; font-weight: 800; letter-spacing: .03em; color: var(--ink-3);
 }
 .bn .ic { width: 26px; height: 26px; }
+.bn, .tab { position: relative; }
+.nav-n {
+  position: absolute; top: 2px; left: calc(50% + 6px); min-width: 20px; height: 20px; padding: 0 5px; border-radius: 99px;
+  background: var(--gold); color: #3A2A00; font-style: normal; font-size: 12px; font-weight: 900; line-height: 20px; text-align: center;
+}
+.tab .nav-n { position: static; margin-left: -2px; }
 .bn[aria-current="page"] { color: var(--fox); background: var(--fox-soft); }
 
 .main { padding-top: 18px; padding-bottom: calc(var(--nav-h) + 28px + env(safe-area-inset-bottom, 0px)); }
@@ -630,6 +636,11 @@ p { margin: 0; }
 .combo { display: inline-flex; align-items: center; gap: 3px; color: var(--fox); }
 .combo .ic { width: 24px; height: 24px; }
 .combo.pop { animation: pop .45s var(--ease-pop); }
+.combo.is-hot .ic { filter: drop-shadow(0 0 5px color-mix(in srgb, var(--gold) 80%, transparent)); animation: flame .5s ease-in-out infinite alternate; }
+.pips { display: inline-flex; gap: 2px; margin-left: 5px; }
+.pips i { width: 6px; height: 14px; border-radius: 3px; background: var(--rule-strong); }
+.pips i.on { background: var(--gold); }
+.pips.is-full i { box-shadow: 0 0 6px color-mix(in srgb, var(--gold) 80%, transparent); }
 .ses-scroll { flex: 1; overflow-y: auto; -webkit-overflow-scrolling: touch; }
 .ses-body { width: 100%; max-width: 680px; margin: 0 auto; padding: 18px 16px 28px; }
 .ses-body > * { animation: rise .3s ease both; }
@@ -801,11 +812,37 @@ p { margin: 0; }
 .dx-gap { display: inline-block; width: .6em; height: 1em; margin: 0 2px; border: 2px dashed var(--bad); border-radius: 5px; vertical-align: -.15em; }
 .fb .say { width: 36px; height: 36px; border-radius: 12px; }
 .fb .say .ic { width: 20px; height: 20px; }
-.combo-burst {
-  position: fixed; left: 50%; top: 30%; z-index: 70; transform: translate(-50%, -50%);
-  padding: 14px 22px; border-radius: 20px; background: var(--fox); color: #fff; box-shadow: 0 6px 0 var(--fox-deep);
-  font-family: var(--f-display); font-weight: 700; font-size: 30px; pointer-events: none; animation: burst 1.2s ease forwards; white-space: nowrap;
+/* Blitz-Feier alle 5 richtigen in Folge; Stufe 1–4 = 5, 10, 15, ab 20 */
+.zap-fx {
+  position: fixed; inset: 0; z-index: 70; display: grid; place-items: center; padding: 0 16px 24vh; overflow: hidden; pointer-events: none;
+  --c: var(--fox); --c-deep: var(--fox-deep); animation: zap-out 2s ease both;
 }
+.zap-fx.lv2 { --c: var(--sky); --c-deep: var(--sky-deep); }
+.zap-fx.lv3 { --c: var(--good); --c-deep: var(--good-deep); }
+.zap-fx.lv4 { --c: var(--bad); --c-deep: var(--bad-deep); }
+.zap-flash { position: absolute; inset: 0; background: radial-gradient(circle at 50% 38%, color-mix(in srgb, var(--gold) 55%, transparent), transparent 70%); animation: zap-flash .7s ease-out both; }
+.zap-core { position: relative; display: grid; place-items: center; }
+.zap-rays {
+  position: absolute; left: 50%; top: 50%; width: 440px; height: 440px; margin: -220px; border-radius: 50%;
+  background: repeating-conic-gradient(color-mix(in srgb, var(--gold) 50%, transparent) 0deg 9deg, transparent 9deg 30deg);
+  -webkit-mask: radial-gradient(closest-side, #000 30%, transparent); mask: radial-gradient(closest-side, #000 30%, transparent);
+  animation: zap-rays 2s linear both;
+}
+.zap-card {
+  position: relative; display: grid; justify-items: center; min-width: 210px; max-width: 100%; padding: 40px 28px 16px; border-radius: var(--r-lg);
+  background: var(--c); color: #fff; text-align: center; box-shadow: 0 7px 0 var(--c-deep), 0 20px 40px -12px rgba(0, 0, 0, .4);
+  animation: zap-card .55s .06s var(--ease-pop) both;
+}
+.zap-fx.lv4 .zap-card { background: linear-gradient(135deg, var(--fox), var(--bad)); }
+.zap-bolt { position: absolute; top: -54px; left: 50%; margin-left: -45px; width: 90px; height: 90px; color: var(--gold); filter: drop-shadow(0 0 14px color-mix(in srgb, var(--gold) 80%, transparent)); animation: zap-strike .5s ease-out both; }
+.zap-bolt .ic { width: 100%; height: 100%; stroke: #fff; stroke-width: 1.3; }
+.zap-fx.lv3 .zap-bolt, .zap-fx.lv4 .zap-bolt { top: -64px; margin-left: -52px; width: 104px; height: 104px; }
+.zap-n { font-family: var(--f-display); font-weight: 700; font-size: 66px; line-height: 1; text-shadow: 0 3px 0 var(--c-deep); }
+.zap-sub { font-weight: 800; font-size: 15px; }
+.zap-word { margin-top: 2px; font-family: var(--f-display); font-weight: 700; font-size: 27px; }
+.zap-xp { margin-top: 10px; padding: 3px 12px; border-radius: 99px; background: rgba(255, 255, 255, .22); font-weight: 900; font-size: 14px; }
+.zap-spark { position: absolute; left: 50%; top: 50%; width: 12px; height: 12px; margin: -6px; border-radius: 3px; background: var(--gold); opacity: 0; animation: zap-spark .9s .1s ease-out both; }
+.zap-spark:nth-child(even) { background: var(--c); width: 9px; height: 9px; margin: -4px; }
 
 /* Blitz */
 .blitz-score { display: flex; align-items: center; justify-content: center; gap: 16px; margin-bottom: 16px; }
@@ -973,13 +1010,138 @@ body.ses-open { overflow: hidden; }
 @keyframes hop { 0% { transform: translateY(0); } 40% { transform: translateY(-10px) rotate(-4deg); } 100% { transform: translateY(0); } }
 @keyframes droop { 0% { transform: rotate(0); } 40% { transform: rotate(6deg); } 100% { transform: rotate(0); } }
 @keyframes cheer { 0% { transform: scale(.4) rotate(-10deg); opacity: 0; } 70% { transform: scale(1.08) rotate(3deg); opacity: 1; } 100% { transform: scale(1) rotate(0); } }
-@keyframes burst { 0% { opacity: 0; transform: translate(-50%, -30%) scale(.6); } 18% { opacity: 1; transform: translate(-50%, -50%) scale(1.1); } 30% { transform: translate(-50%, -50%) scale(1); } 80% { opacity: 1; } 100% { opacity: 0; transform: translate(-50%, -80%) scale(1); } }
+@keyframes zap-out { 0%, 82% { opacity: 1; transform: none; } 100% { opacity: 0; transform: translateY(-30px); } }
+@keyframes zap-rays { 0% { opacity: 0; transform: rotate(0) scale(.4); } 20% { opacity: 1; transform: rotate(14deg) scale(1); } 100% { opacity: 1; transform: rotate(60deg) scale(1.05); } }
+@keyframes zap-flash { 0% { opacity: 0; } 15% { opacity: 1; } 100% { opacity: 0; } }
+@keyframes zap-card { from { opacity: 0; transform: scale(.3) rotate(-6deg); } to { opacity: 1; transform: none; } }
+@keyframes zap-strike { 0% { opacity: 0; transform: translateY(-160px) scale(1.5) rotate(-10deg); } 35% { opacity: 1; transform: rotate(-10deg); } 55% { transform: scale(1.2) rotate(-10deg); } 100% { opacity: 1; transform: rotate(-10deg); } }
+@keyframes zap-spark { 0% { opacity: 1; transform: rotate(var(--a)) scale(.5); } 100% { opacity: 0; transform: rotate(var(--a)) translateY(calc(-1 * var(--d))) scale(1.1); } }
 @keyframes spin-in { 0% { transform: scale(.3) rotate(-120deg); opacity: 0; } 100% { transform: scale(1) rotate(0); opacity: 1; } }
 @keyframes flame { from { transform: scale(1) rotate(-2deg); } to { transform: scale(1.06) rotate(2deg); } }
+
+
+/* ---------- Fuchstaler ---------- */
+.ob-foot-row.is-center { justify-content: center; }
+.tal-gain {
+  display: flex; align-items: center; justify-content: center; flex-wrap: wrap; gap: 6px 10px; margin: 0 0 12px; padding: 10px 14px;
+  border-radius: 16px; background: var(--card); border: 2px solid var(--rule); font-weight: 700; color: var(--ink-2);
+}
+.tal-gain .ic { width: 24px; height: 24px; color: var(--gold); flex: none; }
+.tal-gain b { font-family: var(--f-display); font-weight: 600; font-size: 20px; color: var(--ink); }
+.tal-gain.is-new { background: var(--gold-soft); border-color: var(--gold); }
+.tal-gain.is-new .ic { animation: spin-in .7s var(--ease-pop) both; }
+
+.tal-hero { display: grid; grid-template-columns: auto minmax(0, 1fr); gap: 14px 18px; align-items: center; }
+.tal-coin { width: 76px; height: 76px; display: grid; place-items: center; border-radius: 50%; background: var(--gold); color: #3A2A00; box-shadow: inset 0 -5px 0 rgba(0, 0, 0, .14); }
+.tal-coin .ic { width: 44px; height: 44px; stroke-width: 2.4; }
+.tal-bal b { display: block; font-family: var(--f-display); font-weight: 600; font-size: 52px; line-height: 1; margin: 2px 0 4px; }
+.tal-bal > span:last-child { font-weight: 700; color: var(--ink-2); }
+.tal-prog { grid-column: 1 / -1; }
+.tal-row { display: flex; justify-content: space-between; gap: 10px; font-weight: 800; font-size: 15px; margin-top: 4px; }
+.tal-row span { color: var(--ink-3); }
+.tal-bar { height: 12px; margin: 6px 0 10px; }
+.tal-bar i { background: linear-gradient(90deg, var(--gold), #FFC94D); }
+.tal-bar.is-next i { background: linear-gradient(90deg, var(--sky), #6FA8FF); }
+.tal-note { font-weight: 700; color: var(--ink-2); margin: 0; }
+.tal-grid { display: grid; gap: 16px; margin: 16px 0; }
+@media (min-width: 760px) { .tal-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); } }
+.tal-grid .card + .card { margin-top: 0; }
+.tal-game, .tal-redeem { display: flex; flex-direction: column; gap: 10px; }
+.tal-game p, .tal-redeem p { margin: 0; }
+.tal-game .btn, .tal-redeem .tal-ask { margin-top: auto; }
+.tal-redeem .card-h .ic { width: 26px; height: 26px; color: var(--sky); }
+.tal-game-art { height: 64px; border-radius: 14px; background: var(--card-2); display: grid; place-items: center; }
+.tal-game-art svg { height: 52px; }
+.tal-game-art .sa-body { fill: var(--good); }
+.tal-game-art .sa-head { fill: var(--good-deep); }
+.tal-game-art .sa-item { fill: var(--gold-soft); stroke: var(--gold); stroke-width: 1.2; }
+.tal-game-art .sa-ch { font: 600 9px var(--f-display); fill: var(--ink); text-anchor: middle; }
+.tal-ask { display: grid; grid-template-columns: repeat(auto-fit, minmax(72px, 1fr)); gap: 10px; }
+.tal-ask .btn { padding: 0 8px; gap: 4px; }
+.tal-ask .btn b { font-family: var(--f-display); font-weight: 600; font-size: 22px; }
+.btn[aria-disabled="true"] { opacity: .5; box-shadow: none; }
+.req-box { display: grid; gap: 10px; text-align: center; padding: 16px; border-radius: var(--r-md); background: var(--sky-soft); border: 2px solid var(--sky); }
+.req-box p { margin: 0; }
+.req-code { font-family: var(--f-display); font-weight: 600; font-size: 46px; letter-spacing: .14em; line-height: 1.1; color: var(--ink); font-variant-numeric: tabular-nums; }
+.req-code span { margin-left: .3em; color: var(--sky); }
+.code-in { min-width: 0; font-variant-numeric: tabular-nums; letter-spacing: .12em; }
+.gate-row .code-in { flex: 1 1 0; }
+.code-in::placeholder { letter-spacing: normal; }
+.req-box .btn-quiet { justify-self: center; }
+.tal-list { list-style: none; margin: 0; padding: 0; }
+.tal-list li { display: flex; justify-content: space-between; gap: 10px; padding: 10px 2px; border-bottom: 1px solid var(--rule); font-weight: 700; color: var(--ink-2); }
+.tal-list li:last-child { border-bottom: 0; }
+.tal-list b { color: var(--ink); }
+
+.fg-card { margin-bottom: 16px; border-color: var(--gold); }
+.fg-card > p { margin: 0 0 12px; font-weight: 600; color: var(--ink-2); }
+.fg-card .tal-ask { margin-bottom: 8px; }
+.fg-code { font-family: var(--f-display); font-weight: 600; font-size: 64px; line-height: 1; letter-spacing: .16em; text-align: center; margin: 4px 0 12px; color: var(--ink); font-variant-numeric: tabular-nums; }
+.fg-code.fg-pair { font-size: clamp(30px, 10vw, 44px); letter-spacing: .08em; margin: 16px 0 8px; }
+.fg-foot { display: flex; flex-wrap: wrap; justify-content: space-between; gap: 6px; margin-top: 14px; padding-top: 8px; border-top: 1px solid var(--rule); }
+.tal-tbl { margin-bottom: 12px; }
+.tal-none { margin: 12px 0; }
+.card .kpis + * { margin-top: 12px; }
+.tal-set .explain { margin: 0; }
+.tal-pair-ok { display: flex; align-items: center; gap: 8px; margin: 0; font-weight: 700; color: var(--ink-2); }
+.tal-pair-ok .ic { width: 22px; height: 22px; color: var(--good); flex: none; }
+.tal-lock { display: flex; align-items: center; flex-wrap: wrap; gap: 10px 12px; padding: 12px 14px; border-radius: var(--r-sm); background: var(--card-2); border: 2px solid var(--rule); }
+.tal-lock > .ic { width: 24px; height: 24px; color: var(--ink-3); flex: none; }
+.tal-lock > div { flex: 1 1 180px; min-width: 0; }
+.tal-lock small { display: block; color: var(--ink-3); font-weight: 600; }
+.tal-dev .btn { max-width: 100%; white-space: normal; text-align: left; }
+.select:disabled, .switch input:disabled + span { opacity: .5; }
+
+/* ---------- Wort-Snake ---------- */
+.snake {
+  position: fixed; inset: 0; z-index: 40; overflow-y: auto; background-color: var(--paper);
+  padding: env(safe-area-inset-top, 0px) 0 env(safe-area-inset-bottom, 0px);
+}
+.sn { width: 100%; max-width: 520px; margin: 0 auto; padding: 8px 16px 16px; display: flex; flex-direction: column; align-items: center; gap: 10px; }
+.sn-top { display: flex; align-items: center; gap: 10px; width: 100%; }
+.sn-hearts { display: flex; gap: 2px; }
+.sn-hearts .ic { width: 24px; height: 24px; color: var(--rule-strong); }
+.sn-hearts .on .ic { color: var(--bad); }
+.sn-score { margin-left: auto; font-family: var(--f-display); font-weight: 600; font-size: 24px; color: var(--ink); }
+.sn-time { min-width: 64px; text-align: center; padding: 4px 10px; border-radius: 12px; background: var(--card); border: 2px solid var(--rule); font-family: var(--f-display); font-weight: 600; font-size: 18px; font-variant-numeric: tabular-nums; }
+.sn-time.is-low { color: var(--bad); border-color: var(--bad); }
+.sn-hint { width: 100%; min-height: 76px; display: grid; justify-items: center; gap: 6px; text-align: center; }
+.sn-de { display: flex; align-items: center; justify-content: center; gap: 4px; min-height: 36px; font-weight: 800; font-size: 19px; color: var(--ink); }
+.sn-de span { overflow-wrap: anywhere; }
+.sn-say { width: 36px; height: 36px; }
+.sn-say .ic { width: 22px; height: 22px; }
+.sn-slots { display: flex; flex-wrap: wrap; justify-content: center; gap: 5px; }
+.sn-slots > * { width: 28px; height: 34px; display: grid; place-items: center; border-radius: 8px; font-family: var(--f-display); font-weight: 600; font-size: 22px; font-style: normal; }
+.sn-slots i { border: 2px dashed var(--rule-strong); }
+.sn-slots b { background: var(--good); color: #fff; }
+.sn-hint.is-done .sn-slots b { background: var(--gold); color: #3A2A00; animation: hop .5s ease; }
+.sn-stage { position: relative; width: min(100%, 440px, calc(100vh - 330px)); width: min(100%, 440px, calc(100dvh - 330px)); min-width: 240px; aspect-ratio: 1; touch-action: none; }
+.sn-stage canvas { display: block; width: 100%; height: 100%; border-radius: var(--r-md); border: 2px solid var(--rule); box-sizing: border-box; }
+.sn-stage.is-hit { animation: sn-shake .35s ease; }
+.sn-over { position: absolute; inset: 0; display: grid; place-items: center; padding: 10px; border-radius: var(--r-md); background: color-mix(in srgb, var(--paper) 70%, transparent); overflow-y: auto; }
+.sn-over[hidden] { display: none; }
+.sn-card { width: 100%; max-width: 340px; display: grid; gap: 10px; justify-items: center; text-align: center; padding: 18px 16px; border-radius: var(--r-md); background: var(--card); border: 2px solid var(--rule); box-shadow: var(--shade); }
+.sn-card h2 { font-size: 28px; }
+.sn-card p { margin: 0; font-weight: 600; color: var(--ink-2); }
+.sn-card .wchips { margin-top: 0; }
+.sn-rec { color: var(--fox) !important; font-weight: 800 !important; }
+.sn-btns { display: flex; flex-wrap: wrap; justify-content: center; gap: 10px; }
+.sn-pad { display: grid; grid-template-columns: repeat(3, 64px); grid-template-areas: ". u ." "l d r"; gap: 8px; touch-action: manipulation; }
+.sn-btn { width: 64px; height: 56px; display: grid; place-items: center; border-radius: 16px; border: 2px solid var(--rule); background: var(--card); color: var(--ink-2); box-shadow: 0 4px 0 var(--rule); -webkit-user-select: none; user-select: none; }
+.sn-btn:active { transform: translateY(3px); box-shadow: 0 1px 0 var(--rule); color: var(--fox); }
+.sn-btn .ic { width: 30px; height: 30px; }
+.sn-u { grid-area: u; } .sn-l { grid-area: l; } .sn-d { grid-area: d; } .sn-r { grid-area: r; }
+@media (pointer: fine) and (min-width: 900px) { .sn-pad { opacity: .75; } }
+@keyframes sn-shake { 0%, 100% { transform: translateX(0); } 25% { transform: translateX(-6px); } 75% { transform: translateX(6px); } }
 
 @media (prefers-reduced-motion: reduce) {
   *, *::before, *::after { animation-duration: .001ms !important; animation-iteration-count: 1 !important; transition-duration: .001ms !important; scroll-behavior: auto !important; }
   .btn.is-auto::after { display: none; }
+  .sn-stage.is-hit, .sn-hint.is-done .sn-slots b, .tal-gain.is-new .ic { animation: none !important; }
+  .sn-btn:active { transform: none; }
+  /* Blitz-Feier ruhig: Karte steht still, ohne Lichtblitz */
+  .zap-fx, .zap-card, .zap-bolt, .zap-rays { animation: none !important; }
+  .zap-flash { display: none; }
 }
 </style>
 
@@ -999,6 +1161,7 @@ body.ses-open { overflow: hidden; }
     <section class="view" id="v-home" aria-label="Lernen"></section>
     <section class="view" id="v-words" aria-label="Wörter" hidden></section>
     <section class="view" id="v-awards" aria-label="Erfolge" hidden></section>
+    <section class="view" id="v-taler" aria-label="Fuchstaler" hidden></section>
     <section class="view" id="v-parents" aria-label="Für Eltern" hidden></section>
     <section class="view" id="v-picker" aria-label="Seiten auswählen" hidden></section>
   </main>
@@ -1024,6 +1187,8 @@ body.ses-open { overflow: hidden; }
       </div>
     </footer>
   </section>
+
+  <section class="snake" id="snake" aria-label="Wort-Snake" hidden></section>
 
   <section class="onboard" id="onboard" aria-label="Willkommen" hidden></section>
 
@@ -1149,7 +1314,27 @@ function tileSpec(w) {
   return null;
 }
 
-// Lückensatz aus dem Beispielsatz
+// -s-Form (Mehrzahl, he/she/it): marker → markers, watch → watches, hobby → hobbies.
+// Kurze Wörter und Possessiva nie (it → its, her → hers).
+const NO_S_FORM = new Set(['her', 'our', 'your', 'their']);
+const sFormable = p => p.length >= 3 && !NO_S_FORM.has(p) && !p.includes("'");
+const sForm = p => p === 'have' ? 'has' : /(s|x|z|ch|sh|[^aeiou]o)$/.test(p) ? p + 'es' : /[^aeiou]y$/.test(p) ? p.slice(0, -1) + 'ies' : p + 's';
+const sFormRx = p => !sFormable(p) ? escRx(p) : `(?:${escRx(p)}(?:e?s)?${/[^aeiou]y$/.test(p) ? `|${escRx(p.slice(0, -1))}ies` : ''})`;
+// Ablenker im Lückensatz in dieselbe Form bringen wie das gesuchte Wort: die Form aus dem
+// eigenen Beispielsatz oder bei Verben he/she/it + s. null = keine sichere Form (alone → alones)
+let VERB_KEYS = null;
+function gapForm(o, gap) {
+  if (!gap.inf) return o.k;
+  if (o.gap && o.gap.inf) return o.gap.word.toLowerCase();
+  if (!VERB_KEYS) VERB_KEYS = new Set(WORDS.filter(x => /^to \S+$/.test(x.en)).map(x => x.k));
+  const v = o.k.split(' ')[0];
+  // mehrteilig nur, wenn das erste Wort selbst ein Verb ist (look after → looks after, nicht videos chat)
+  if (!/^to /.test(o.en) || !sFormable(v) || (v !== o.k && !VERB_KEYS.has(v))) return null;
+  return o.k.replace(/^\S+/, sForm);
+}
+
+// Lückensatz aus dem Beispielsatz. Steht das Wort dort nur mit -s (markers, starts, hobbies),
+// wird diese Form gesucht (inf).
 function gapSpec(w) {
   if (!w.ex || w.ex.length > 110) return null;
   const key = w.k;
@@ -1157,14 +1342,19 @@ function gapSpec(w) {
   const parts = key.split(' ');
   if (parts.length > 4) return null;
   const ex = w.ex.replace(APOS, "'");
-  const rx = new RegExp(`(^|[^A-Za-z'])(${parts.map(escRx).join('\\s+')})(?=$|[^A-Za-z'])`, 'i');
-  const m = ex.match(rx);
+  const find = ps => ex.match(new RegExp(`(^|[^A-Za-z']|(?:^|[^A-Za-z])')(${ps.join('\\s+')})(?=$|[^A-Za-z']|'(?![A-Za-z]))`, 'i'));
+  let m = find(parts.map(escRx)), inf = false;
+  if (!m) {
+    const n = parts.length - 1;
+    m = find(parts.map((p, i) => i === 0 || i === n ? sFormRx(p) : escRx(p)));
+    inf = !!m;
+  }
   if (!m) return null;
   const start = m.index + m[1].length;
   const word = m[2];
   const before = ex.slice(0, start), after = ex.slice(start + word.length);
   if (!/[A-Za-z]{2}/.test(before + after)) return null;
-  return { before, word, after };
+  return { before, word, after, inf };
 }
 
 const lc = s => s.toLowerCase();
@@ -1411,8 +1601,9 @@ const xpAt = L => 50 * L * (L - 1);
 function fresh() {
   return {
     v: 1, t0: Date.now(), onb: false, rs: 0,
-    set: { name: '', goal: 100, sfx: true, tts: true, rate: 0.9, voice: '', m: 0 },
+    set: { name: '', goal: 100, sfx: true, tts: true, rate: 0.9, voice: '', m: 0, tal: true, tk: 60, td: 20, tm: 60 },
     w: {}, days: {}, asg: {}, cur: '', curM: 0, tests: [], bdg: {}, st: {},
+    pair: { k: '', m: 0 }, req: { c: '', o: 0, n: 0, m: 0 }, red: [],
   };
 }
 let S = fresh();
@@ -1435,7 +1626,9 @@ function unpack(d) {
     if (!s.w[id]) delete s.w[id];
   }
   for (const k of ['days', 'asg', 'bdg', 'st']) if (!isObj(s[k])) s[k] = {};
+  for (const k of ['pair', 'req']) if (!isObj(s[k])) s[k] = fresh()[k];
   if (!Array.isArray(s.tests)) s.tests = [];
+  if (!Array.isArray(s.red)) s.red = [];
   return s;
 }
 
@@ -1475,6 +1668,12 @@ function mergeState(a, b) {
   r.bdg = { ...b.bdg };
   for (const [k, v] of Object.entries(a.bdg)) r.bdg[k] = r.bdg[k] ? Math.min(r.bdg[k], v) : v;
   for (const src of [a.st, b.st]) for (const [k, v] of Object.entries(src)) r.st[k] = Math.max(r.st[k] || 0, +v || 0);
+  // Fuchstaler: Kopplung und offene Anfrage nach m, Einlöse-Verlauf vereint
+  r.pair = (b.pair.m || 0) > (a.pair.m || 0) ? b.pair : a.pair;
+  r.req = (b.req.m || 0) > (a.req.m || 0) ? b.req : a.req;
+  const red = new Map();
+  for (const x of [...a.red, ...b.red]) red.set(x.id, x);
+  r.red = [...red.values()].sort((x, y) => x.t - y.t).slice(-400);   // Kontostand rechnet mit dem Verlauf
   return r;
 }
 
@@ -1814,6 +2013,12 @@ const ICONS = {
   train: '<path d="M8 3.1V7a4 4 0 0 0 8 0V3.1M9 15l-1-1M15 15l1-1M9 19c-2.8 0-5-2.2-5-5v-4a8 8 0 0 1 16 0v4c0 2.8-2.2 5-5 5zM8 19l-2 3M16 19l2 3"/>',
   'bar-chart': '<path d="M12 20V10M18 20V4M6 20v-4"/>',
   sliders: '<path d="M4 21v-7M4 10V3M12 21v-9M12 8V3M20 21v-5M20 12V3M1 14h6M9 8h6M17 16h6"/>',
+  coin: '<circle cx="12" cy="12" r="9.5"/><path d="M8.5 8.5h7M12 8.5v7.5"/>',
+  gamepad: '<rect x="2" y="6" width="20" height="12" rx="6"/><path d="M6 12h4M8 10v4M15 13h.01M18 11h.01"/>',
+  smartphone: '<rect x="6" y="2" width="12" height="20" rx="2.5"/><path d="M11 18h2"/>',
+  'arrow-up': '<path d="M12 19V5M5 12l7-7 7 7"/>',
+  'arrow-down': '<path d="M12 5v14M19 12l-7 7-7-7"/>',
+  'arrow-left': '<path d="M19 12H5M12 19l-7-7 7-7"/>',
 };
 const icon = (n, cls = '') => `<svg class="ic${cls ? ' ' + cls : ''}" viewBox="0 0 24 24" aria-hidden="true" focusable="false">${ICONS[n] || ''}</svg>`;
 
@@ -1845,23 +2050,41 @@ const TTS = {
   ok: typeof window.speechSynthesis !== 'undefined' && typeof window.SpeechSynthesisUtterance === 'function',
   voices: [],
   voice: null,
+  // Höchstens 3 gut verständliche Stimmen anbieten, britische zuerst – keine Spaß- und Roboterstimmen (Bubbles, Zarvox, Grandpa …)
+  MAX: 3,
+  odd: /^(albert|bad news|bahh|bells|boing|bruce|bubbles|cellos|deranged|eddy|flo|fred|good news|grandma|grandpa|hysterical|jester|junior|kathy|organ|pipe organ|princess|ralph|reed|rocko|sandy|shelley|superstar|trinoids|vicki|victoria|whisper|wobble|zarvox)\b/i,
+  good: /\b(daniel|kate|serena|arthur|martha|oliver|stephanie|jamie|libby|sonia|ryan|maisie|thomas|hazel|george|susan|samantha|aaron|nicky|alex|ava|allison|tom|zoe|evan|google)\b/i,
+  score(v) {
+    const n = v.name || '';
+    if (this.odd.test(n) || /eloquence|novelty/i.test(v.voiceURI || '')) return -1;
+    return (/en[-_]GB/i.test(v.lang) ? 100 : /en[-_]US/i.test(v.lang) ? 50 : 0)
+      + (/natural|neural|premium|enhanced|erweitert|verbessert|optimiert/i.test(n + ' ' + (v.voiceURI || '')) ? 20 : 0)
+      + (this.good.test(n) ? 10 : 0);
+  },
+  // "Microsoft Libby Online (Natural) - English (United Kingdom)" -> "Libby · britisch"
+  label(v) {
+    const n = (v.name || '').replace(/^microsoft\s+/i, '').replace(/\s+online\b.*$/i, '').replace(/\s+[-–]\s.*$|\s*\(.*$/, '').trim() || v.name;
+    return `${n} · ${/en[-_]GB/i.test(v.lang) ? 'britisch' : /en[-_]US/i.test(v.lang) ? 'amerikanisch' : 'englisch'}`;
+  },
   init() {
     if (!this.ok) return;
     const load = () => {
-      try { this.voices = speechSynthesis.getVoices().filter(v => /^en([-_]|$)/i.test(v.lang)); } catch (e) { this.voices = []; }
+      try {
+        const seen = new Set();
+        this.voices = speechSynthesis.getVoices()
+          .filter(v => /^en([-_]|$)/i.test(v.lang) && this.score(v) >= 0)
+          .sort((a, b) => this.score(b) - this.score(a))
+          .filter(v => { const k = this.label(v); return !seen.has(k) && seen.add(k); })
+          .slice(0, this.MAX);
+      } catch (e) { this.voices = []; }
       this.pick();
     };
     load();
     try { speechSynthesis.addEventListener('voiceschanged', load); } catch (e) { speechSynthesis.onvoiceschanged = load; }
   },
   pick() {
-    const vs = this.voices, gb = v => /en[-_]GB/i.test(v.lang);
-    this.voice = vs.find(v => v.voiceURI === S.set.voice)
-      || vs.find(v => gb(v) && /natural|neural|premium|enhanced/i.test(v.name))
-      || vs.find(v => gb(v) && /google/i.test(v.name))
-      || vs.find(gb)
-      || vs.find(v => /en[-_]US/i.test(v.lang))
-      || vs[0] || null;
+    // Liste ist schon nach Güte sortiert; eine früher gewählte Spaßstimme fällt so automatisch weg
+    this.voice = this.voices.find(v => v.voiceURI === S.set.voice) || this.voices[0] || null;
   },
   speak(text, slow = false) {
     if (!this.ok || !text) return;
@@ -1912,7 +2135,24 @@ const Sfx = {
     o.start(t);
     o.stop(t + d + 0.05);
   },
-  play(name) {
+  // Knistern für den Blitz: kurzes Rauschen durch einen Bandpass
+  noise(c, t, d, v, hz) {
+    const n = Math.round(c.sampleRate * d), b = c.createBuffer(1, n, c.sampleRate), a = b.getChannelData(0);
+    for (let i = 0; i < n; i++) a[i] = (Math.random() * 2 - 1) * (1 - i / n);
+    const src = c.createBufferSource(), f = c.createBiquadFilter(), g = c.createGain();
+    src.buffer = b;
+    f.type = 'bandpass';
+    f.frequency.value = hz;
+    f.Q.value = 0.9;
+    g.gain.setValueAtTime(v, t);
+    g.gain.exponentialRampToValueAtTime(0.0001, t + d);
+    src.connect(f);
+    f.connect(g);
+    g.connect(c.destination);
+    src.start(t);
+    src.stop(t + d + 0.02);
+  },
+  play(name, lv = 1) {
     if (!S.set.sfx) return;
     const c = this.get();
     if (!c) return;
@@ -1927,6 +2167,17 @@ const Sfx = {
       case 'combo': [659, 784, 988, 1319].forEach((f, i) => T(f, i * 0.065, 0.16, 'triangle', 0.12)); break;
       case 'win': [523, 659, 784, 1047].forEach((f, i) => T(f, i * 0.11, 0.3, 'triangle', 0.14)); T(1319, 0.46, 0.5, 'sine', 0.12); break;
       case 'level': [392, 523, 659, 784, 1047, 1319].forEach((f, i) => T(f, i * 0.08, 0.3, 'square', 0.045)); break;
+      // Blitz-Feier: Zischen, dann Fanfare – je Stufe einen Ton höher und voller
+      case 'zap': {
+        const k = Math.pow(2, [0, 2, 4, 5][lv - 1] / 12), n = [523, 659, 784, 1047].map(f => f * k);
+        try { this.noise(c, t, 0.22, 0.22, 2600); } catch (e) { /* egal */ }
+        T(1900, 0, 0.2, 'sawtooth', 0.045, 140);
+        n.forEach((f, i) => T(f, 0.16 + i * 0.07, 0.2, 'triangle', 0.13));
+        T(n[3], 0.46, 0.55, 'sine', 0.11);
+        T(n[1] * 2, 0.46, 0.55, 'sine', 0.06);
+        if (lv >= 3) [2, 2.52].forEach((m, i) => T(n[0] * m * 2, 0.62 + i * 0.07, 0.25, 'sine', 0.05));
+        break;
+      }
       case 'tick': T(1760, 0, 0.03, 'square', 0.03); break;
       case 'start': T(440, 0, 0.1); T(660, 0.1, 0.1); T(880, 0.2, 0.2, 'sine', 0.16); break;
     }
@@ -2052,16 +2303,19 @@ function confetti(n = 110) {
 }
 
 // ---------- Navigation ----------
-const NAV = [['home', 'Lernen', 'route'], ['words', 'Wörter', 'book-open'], ['awards', 'Erfolge', 'trophy'], ['parents', 'Eltern', 'users']];
+const NAV = [['home', 'Lernen', 'route'], ['words', 'Wörter', 'book-open'], ['awards', 'Erfolge', 'trophy'], ['taler', 'Taler', 'coin'], ['parents', 'Eltern', 'users']];
 const VIEWS = {};      // Name -> render(neu geöffnet?)
 let VIEW = 'home';
 
 function renderNav() {
   const cur = VIEW === 'picker' ? 'home' : VIEW;
+  const nav = NAV.filter(([v]) => v !== 'taler' || talOn());
+  const n = talOn() ? talBalance() : 0;
+  const badge = v => v === 'taler' && n ? `<em class="nav-n" aria-label="${plural(n, 'Taler', 'Taler')}">${n}</em>` : '';
   const item = cls => ([v, label, ic]) =>
-    `<button class="${cls}" type="button" data-go="${v}"${v === cur ? ' aria-current="page"' : ''}>${icon(ic)}<span>${label}</span></button>`;
-  $('#tabs').innerHTML = NAV.map(item('tab')).join('');
-  $('#bottom-nav').innerHTML = NAV.map(item('bn')).join('');
+    `<button class="${cls}" type="button" data-go="${v}"${v === cur ? ' aria-current="page"' : ''}>${icon(ic)}<span>${label}</span>${badge(v)}</button>`;
+  $('#tabs').innerHTML = nav.map(item('tab')).join('');
+  $('#bottom-nav').innerHTML = nav.map(item('bn')).join('');
 }
 function go(v) {
   if (!VIEWS[v]) v = 'home';
@@ -2073,6 +2327,7 @@ function go(v) {
 }
 function refresh() {
   renderTop();
+  renderNav();
   if (VIEWS[VIEW]) VIEWS[VIEW](false);
 }
 
@@ -2674,7 +2929,7 @@ VIEWS.awards = () => {
 };
 
 // ======================= Eltern =======================
-const PAR = { ok: false, a: 0, b: 0 };
+const PAR = { ok: false, a: 0, b: 0, tal: false };   // tal: Taler-Einstellungen per Freigabe-Code entsperrt
 const GRADE_C = ['', '#1E9A55', '#5BAF63', '#D99A00', '#E07B00', '#DC3B40', '#A61E24'];
 
 VIEWS.parents = isNew => {
@@ -2695,7 +2950,7 @@ SUB.gate = () => {
   inp.value = '';
   toast('Das stimmt leider nicht.');
 };
-ACT['par-lock'] = () => { PAR.ok = false; VIEWS.parents(true); };
+ACT['par-lock'] = () => { PAR.ok = false; PAR.tal = false; VIEWS.parents(true); };
 
 function parentsHTML() {
   const t = today(), st = streakInfo(), a = curAsg();
@@ -2723,7 +2978,7 @@ function parentsHTML() {
   const hardRows = hard.map(w => { const s = S.w[w.id]; return `<tr><td lang="en"><b>${esc(w.plain)}</b></td><td>${esc(deShort(w))}</td><td>${s.x}</td><td>${GROUPS[groupOf(s.b)]}</td></tr>`; }).join('');
 
   const sel = (ch, cur, opts, label) => `<select class="select" data-ch="${ch}" aria-label="${label}">${opts.map(([v, l]) => `<option value="${esc(v)}"${String(v) === String(cur) ? ' selected' : ''}>${esc(l)}</option>`).join('')}</select>`;
-  const voices = TTS.voices.map(v => [v.voiceURI, `${v.name} (${v.lang})`]);
+  const voices = TTS.voices.map(v => [v.voiceURI, TTS.label(v)]);
   const voiceRow = TTS.ok
     ? `<div class="set-row"><div><span class="lbl">Stimme</span><small>${voices.length ? 'Britisches Englisch klingt wie im Schulbuch.' : 'Keine englische Stimme gefunden.'}</small></div>
         <div class="set-ctl">${voices.length ? sel('set-voice', S.set.voice, [['', 'Automatisch'], ...voices], 'Stimme') : ''}<button class="btn btn-ghost btn-sm" type="button" data-act="voice-test">${icon('volume')}Testen</button></div></div>
@@ -2732,6 +2987,7 @@ function parentsHTML() {
 
   return `<div class="wrap">
     <div class="page-head"><h1>Für Eltern</h1><button class="btn btn-ghost btn-sm" type="button" data-act="par-lock">${icon('lock')}Sperren</button></div>
+    ${fgCardHTML()}
     <div class="kpis">
       <div class="kpi"><span>Wörter gelernt</span><b>${wordsLearned()}</b><em>von ${started} begonnenen</em></div>
       <div class="kpi"><span>Lernzeit (7 Tage)</span><b>${min7} min</b><em>an ${plural(days7, 'Tag', 'Tagen')}</em></div>
@@ -2746,6 +3002,7 @@ function parentsHTML() {
     <div class="card"><div class="card-h"><h2>Schwierigste Wörter</h2></div>${hardRows
       ? `<div class="tbl-wrap"><table class="tbl"><thead><tr><th>Englisch</th><th>Deutsch</th><th>Fehler</th><th>Stand</th></tr></thead><tbody>${hardRows}</tbody></table></div>`
       : '<p class="muted">Noch keine Fehler – oder noch nicht geübt.</p>'}</div>
+    ${talParentHTML()}
     <div class="card"><div class="card-h"><h2>So funktioniert Wortfuchs</h2></div><ul class="explain">
       <li><b>Seiten wählen:</b> Ihr Kind trägt die aufgegebenen Seiten und das Testdatum ein. Die neuen Wörter werden gleichmäßig auf die Tage bis zum Test verteilt.</li>
       <li><b>Stationen:</b> Je etwa 5 Wörter – erst kennenlernen und anhören, dann erkennen, dann selbst schreiben.</li>
@@ -2812,7 +3069,8 @@ function renderOnboard() {
   if (s === 0) {
     body = `<div class="ob-hero">${fox('happy')}<h1>Hallo, ich bin Fitz!</h1>
       <p class="ob-lead">Ich helfe dir, deine Englisch-Vokabeln zu lernen – Station für Station, wie mit der U-Bahn durch London.</p></div>`;
-    foot = `<button class="btn btn-primary btn-block" type="button" data-act="ob-next">Los geht's! ${icon('arrow-right')}</button>`;
+    foot = `<button class="btn btn-primary btn-block" type="button" data-act="ob-next">Los geht's! ${icon('arrow-right')}</button>
+      <div class="ob-foot-row is-center"><button class="btn btn-quiet" type="button" data-act="ob-parent">Ich richte das Eltern-Handy ein</button></div>`;
   } else if (s === 1) {
     body = `<div class="ob-q">${fox()}<h2 id="ob-t">Wie heißt du?</h2></div>
       <input class="field" id="ob-name" data-in="ob-name" value="${esc(OB.name)}" maxlength="20" placeholder="Dein Vorname" autocomplete="off" aria-labelledby="ob-t">
@@ -2880,6 +3138,7 @@ function addXP(n) {
   const r = todayRec();
   r.xp = (r.xp || 0) + n;
   if (SES) SES.xp += n;
+  if (!SES || SES.kind !== 'blitz') talEarn(n);   // Blitz zählt erst am Ende (talBlitz)
 }
 const bump = (k, n = 1) => { const r = todayRec(); r[k] = (r[k] || 0) + n; };
 const statInc = k => { S.st[k] = (S.st[k] || 0) + 1; };
@@ -3079,18 +3338,36 @@ function renderBar(p) {
   $('#ses-bar-fill').style.width = pct + '%';
   $('#ses-bar').setAttribute('aria-valuenow', pct);
 }
+// Kombo oben rechts: Flamme, Zahl und 5 Striche, die sich bis zum nächsten Blitz füllen
 function renderMeta(pop) {
   if (SES.kind === 'blitz' || SES.kind === 'test') return;
-  $('#ses-meta').innerHTML = SES.combo >= 2
-    ? `<span class="combo${pop ? ' pop' : ''}" role="img" aria-label="${SES.combo} richtig in Folge">${icon('flame', 'ic-fill')}${SES.combo}</span>` : '';
+  const n = SES.combo, k = n % 5 || (n ? 5 : 0);
+  $('#ses-meta').innerHTML = n
+    ? `<span class="combo${n >= 5 ? ' is-hot' : ''}${pop ? ' pop' : ''}" role="img" aria-label="${n} richtig in Folge, noch ${5 - k || 5} bis zum Blitz">${icon('flame', 'ic-fill')}${n}<span class="pips${k === 5 ? ' is-full' : ''}">${'<i class="on"></i>'.repeat(k)}${'<i></i>'.repeat(5 - k)}</span></span>` : '';
 }
-function burst(html) {
-  const el = document.createElement('div');
-  el.className = 'combo-burst';
+// Alle 5 richtigen in Folge: Blitz-Feier mit Bonus-XP (ab 10 in Folge doppelt)
+const ZAP_TXT = ['Super Serie!', 'Wahnsinn!', 'Nicht zu stoppen!', 'Legendär!'];
+function comboZap() {
+  const n = SES.combo, V = SES.view;
+  if (!n || n % 5) return;
+  const bonus = n >= 10 ? 10 : 5;
+  addXP(bonus);
+  V.xp += bonus;
+  V.zap = true;
+  zapFx(n, bonus);
+}
+function zapFx(n, bonus) {
+  const lv = Math.min(4, n / 5), k = 8 + lv * 3, el = document.createElement('div');
+  let sparks = '';
+  if (!REDUCED) for (let i = 0; i < k; i++) sparks += `<i class="zap-spark" style="--a:${Math.round(i * 360 / k)}deg;--d:${150 + rnd(70) + lv * 15}px"></i>`;
+  el.className = 'zap-fx lv' + lv;
   el.setAttribute('aria-hidden', 'true');
-  el.innerHTML = html;
+  el.innerHTML = `<i class="zap-flash"></i><div class="zap-core"><i class="zap-rays"></i><div class="zap-card"><span class="zap-bolt">${icon('zap', 'ic-fill')}</span>
+    <b class="zap-n">${n}</b><span class="zap-sub">richtig in Folge</span><span class="zap-word">${ZAP_TXT[lv - 1]}</span><span class="zap-xp">+${bonus} XP Bonus</span></div>${sparks}</div>`;
+  document.querySelectorAll('.zap-fx').forEach(x => x.remove());
   document.body.appendChild(el);
-  after(1300, () => el.remove());
+  after(120, () => Sfx.play('zap', lv));
+  after(ZAP_MS, () => el.remove());
 }
 function focusBody() { try { $('#ses-body').focus({ preventScroll: true }); } catch (e) { /* egal */ } }
 const kicker = (txt, s) => `<div class="ex-kicker">${s && s.again ? '<span class="tag">Nochmal</span>' : ''}${txt}</div>`;
@@ -3173,8 +3450,8 @@ function renderChoice(s) {
   if (t === 'gapc') {
     const cap = /^[A-Z]/.test(w.gap.word);
     const want = canon(w.gap.word);
-    const ds = distract(w, 10, pool, 'en').filter(o => /^[a-z' -]{2,22}$/.test(o.k) && o.k !== want).slice(0, 3);
-    if (ds.length >= 2) opts = [{ x: w.gap.word, w }, ...ds.map(o => ({ x: cap ? o.k[0].toUpperCase() + o.k.slice(1) : o.k, w: o }))];
+    const ds = distract(w, w.gap.inf ? 40 : 10, pool, 'en').filter(o => /^[a-z' -]{2,22}$/.test(o.k)).map(o => ({ x: gapForm(o, w.gap), w: o })).filter(o => o.x && o.x !== want).slice(0, 3);
+    if (ds.length >= 2) opts = [{ x: w.gap.word, w }, ...ds.map(o => ({ x: cap ? o.x[0].toUpperCase() + o.x.slice(1) : o.x, w: o.w }))];
     else t = 'mcDe';
   }
   if (t === 'mcEn') opts = [w, ...distract(w, 3, pool, 'de')].map(o => ({ x: deShort(o), w: o }));
@@ -3208,17 +3485,26 @@ ACT.opt = el => {
   const k = +el.dataset.k;
   if (SES.kind === 'blitz') { blitzPick(k); return; }
   const s = SES.cur, V = SES.view;
-  if (SES.phase !== 'ask' || !V.opts) return;
-  const ok = k === V.right;
+  if (SES.phase !== 'ask' || !V.opts || el.disabled) return;
+  if (k !== V.right) {
+    // Falsch: kurz rot aufleuchten, dann grau – die Lösung bleibt verborgen, er wählt nochmal
+    const o = V.opts[k];
+    if (V.hint === undefined) {
+      V.hint = o.w && o.w !== s.w ? (V.t === 'mcEn' ? `„${esc(o.x)}“ heißt auf Englisch <b lang="en">${esc(o.w.plain)}</b>.`
+        : `<span lang="en">„${esc(o.w.plain)}“</span> heißt ${esc(deShort(o.w))}.`)
+        : V.t === 'spell' ? 'Schau dir die Buchstaben genau an.' : '';
+    }
+    V.tries = (V.tries || 0) + 1;
+    el.disabled = true;
+    el.classList.add('is-wrong');
+    if (document.activeElement === el) focusBody();
+    Sfx.play('bad');
+    after(650, () => { el.classList.remove('is-wrong'); el.classList.add('is-dim'); });
+    return;
+  }
   markOpts(k, V.right);
   if (V.t === 'gapc') { const g = $('#gap-slot'); g.textContent = s.w.gap.word; g.classList.add('is-right'); }
-  const o = V.opts[k];
-  let hint = '';
-  if (!ok && o.w && o.w !== s.w) {
-    hint = V.t === 'mcEn' ? `„${esc(o.x)}“ heißt auf Englisch <b lang="en">${esc(o.w.plain)}</b>.`
-      : `<span lang="en">„${esc(o.w.plain)}“</span> heißt ${esc(deShort(o.w))}.`;
-  } else if (!ok && V.t === 'spell') hint = 'Schau dir die Buchstaben genau an.';
-  judge(s, ok ? 'ok' : 'bad', { hint });
+  judge(s, V.tries ? 'bad' : 'ok', { hint: V.hint || '', found: !!V.tries });
   $('#ses-go').focus({ preventScroll: true });
 };
 
@@ -3421,8 +3707,11 @@ function checkTyped() {
     return;
   }
   let res = r.res === 'retry' ? 'bad' : r.res, hint = '';
-  const dx = r.res === 'ok' ? null : spellDiff(w, raw, [s.t === 'gapt' ? w.gap.word : w.plain, ...w.forms], s.t === 'type');
-  if (res === 'ok' && r.cap) { res = 'near'; hint = `Achte auf die Großschreibung: <b lang="en">${r.cap.map(esc).join(', ')}</b>`; }
+  // Lücke braucht die -s-Form, getippt wurde die Grundform (marker statt markers)
+  const bare = s.t === 'gapt' && w.gap.inf && r.res === 'ok' && !r.alt && normIn(w, raw) !== canon(w.gap.word);
+  const dx = r.res === 'ok' && !bare ? null : spellDiff(w, raw, bare ? [w.gap.word] : [s.t === 'gapt' ? w.gap.word : w.plain, ...w.forms], s.t === 'type');
+  if (bare) { res = 'near'; hint = `Das Wort stimmt! In diesen Satz passt aber <b lang="en">${esc(w.gap.word)}</b> – achte auf die Endung.`; }
+  else if (res === 'ok' && r.cap) { res = 'near'; hint = `Achte auf die Großschreibung: <b lang="en">${r.cap.map(esc).join(', ')}</b>`; }
   else if (res === 'ok' && r.alt) hint = `Auch richtig! Im Buch steht <b lang="en">${esc(w.plain)}</b>.`;
   else if (res === 'ok' && r.full && s.t !== 'gapt') hint = `Im Buch: <b lang="en">${esc(w.plain)}</b>`;
   else if (res === 'ok' && r.low) hint = 'Kleiner Tipp: Englische Nomen schreibt man klein.';
@@ -3458,15 +3747,11 @@ function judge(s, res, x = {}) {
     SES.errs++;
     SES.combo = 0;
     requeue(s);
+    if (x.found) xp = 2;   // nach Fehlversuch selbst gefunden
   }
   V.xp = xp;
   addXP(xp);
-  if (res === 'ok' && SES.combo % 5 === 0) {
-    addXP(5);
-    V.xp += 5;
-    burst(`${icon('flame', 'ic-fill')} ${SES.combo} in Folge!`);
-    after(260, () => Sfx.play('combo'));
-  }
+  if (res === 'ok') comboZap();
   SES.best = Math.max(SES.best, SES.combo);
   statMax('combo', SES.combo);
   SES.done++;
@@ -3490,11 +3775,11 @@ function requeue(s) {
 function showFeedback(s, res, x = {}) {
   const w = s.w, V = SES.view;
   SES.phase = 'fb';
-  const cls = res === 'ok' ? 'ok' : res === 'near' ? 'near' : 'bad';
+  const cls = res === 'ok' ? 'ok' : res === 'near' || x.found ? 'near' : 'bad';
   setFoot(cls);
   const head = x.over ? 'Okay – zählt als richtig!' : res === 'ok' ? pickOne(PRAISE) : res === 'near' ? 'Fast richtig!'
-    : res === 'miss' ? 'Kein Problem – merk es dir:' : 'Nicht ganz.';
-  const mood = res === 'ok' ? 'happy' : res === 'near' ? 'wow' : 'sad';
+    : x.found ? 'Gefunden! Nächstes Mal klappt’s sofort.' : res === 'miss' ? 'Kein Problem – merk es dir:' : 'Nicht ganz.';
+  const mood = res === 'ok' ? 'happy' : cls === 'near' ? 'wow' : 'sad';
   const shown = s.t === 'gapt' || s.t === 'gapc' ? w.gap.word : w.plain;
   const hints = [];
   if (x.hint) hints.push(x.hint);
@@ -3502,13 +3787,13 @@ function showFeedback(s, res, x = {}) {
   const dx = res !== 'ok' && x.dx;
   $('#ses-fb').innerHTML = `<div class="fb-head">${fox(mood)}<span>${head}</span>${V.xp ? `<span class="fb-xp">+${V.xp} XP</span>` : ''}</div>
     ${dx ? `<p class="fb-ans fb-you">Du: <b lang="en" class="dx">${dxHTML(dx, 'you')}</b></p>` : ''}
-    <div class="fb-row"><p class="fb-ans">${res === 'ok' ? '' : 'Richtig: '}<b lang="en"${dx ? ' class="dx"' : ''}>${dx ? dxHTML(dx, 'fix') : esc(shown)}</b> = ${esc(deShort(w))}</p>${sayBtn(w)}</div>
+    <div class="fb-row"><p class="fb-ans">${res === 'ok' || x.found ? '' : 'Richtig: '}<b lang="en"${dx ? ' class="dx"' : ''}>${dx ? dxHTML(dx, 'fix') : esc(shown)}</b> = ${esc(deShort(w))}</p>${sayBtn(w)}</div>
     ${hints.map(h => `<p class="fb-hint">${h}</p>`).join('')}`;
   V.canOver = (s.t === 'type' || s.t === 'gapt') && (res === 'bad' || res === 'near') && !x.over;
   setSkip(V.canOver ? 'Ich hatte recht' : '');
-  setGo(`Weiter ${icon('arrow-right')}`, res === 'ok' ? 'btn-good' : res === 'near' ? 'btn-near' : 'btn-bad');
-  if (res === 'ok') autoNext(hints.length ? AUTO_HINT_MS : AUTO_MS);
-  if (!x.over) Sfx.play(res === 'ok' ? 'ok' : res === 'near' ? 'near' : 'bad');
+  setGo(`Weiter ${icon('arrow-right')}`, res === 'ok' ? 'btn-good' : cls === 'near' ? 'btn-near' : 'btn-bad');
+  if (res === 'ok') autoNext(hints.length ? AUTO_HINT_MS : V.zap ? ZAP_MS - 300 : AUTO_MS);
+  if (!x.over) Sfx.play(res === 'ok' ? 'ok' : cls === 'near' ? 'near' : 'bad');
   autoSay(w, 200);
 }
 
@@ -3530,7 +3815,8 @@ function dxHTML(ops, side) {
 
 // Richtig? Dann geht es nach kurzer Pause von selbst weiter (mit Hinweis länger).
 // Bei Fehlern wartet die Übung auf „Weiter“, damit die Korrektur gelesen wird.
-const AUTO_MS = 1100, AUTO_HINT_MS = 2400, AUTO_MAX = 4500;
+// Nach einer Blitz-Feier etwas länger, damit sie nicht über der nächsten Aufgabe liegt.
+const AUTO_MS = 1100, AUTO_HINT_MS = 2400, AUTO_MAX = 4500, ZAP_MS = 2000;
 function autoNext(ms) {
   const V = SES.view, go = $('#ses-go'), t0 = performance.now();
   go.style.setProperty('--auto', ms + 'ms');
@@ -3564,12 +3850,14 @@ function overrule() {
   SES.ok++;
   bump('ok');
   const gain = (V.hinted ? 6 : XP_OF[s.t]) - V.xp;
+  bump('fx');
   addXP(gain);
   V.xp += gain;
   if (!V.hinted) statInc('typed');
   SES.combo = V.combo0 + 1;
   SES.best = Math.max(SES.best, SES.combo);
   statMax('combo', SES.combo);
+  comboZap();
   if (V.req) {
     const i = SES.q.indexOf(V.req);
     if (i >= 0) { SES.q.splice(i, 1); SES.req[w.id]--; }
@@ -3644,7 +3932,7 @@ function animateGoal() {
 function resultHTML(o) {
   return `<div class="result">${fox(o.mood)}<h1>${o.title}</h1><p class="lead">${o.lead}</p>
     <div class="rstats">${o.stats.map(([cls, label, ic, val]) => `<div class="rs ${cls}"><span>${label}</span><b>${icon(ic)}${val}</b></div>`).join('')}</div>
-    ${goalHTML(SES.xp0)}
+    ${talGainHTML()}${goalHTML(SES.xp0)}
     ${o.chips ? `${o.note ? `<p class="res-note">${o.note}</p>` : ''}<div class="wchips">${o.chips}</div>` : ''}</div>`;
 }
 
@@ -3840,6 +4128,7 @@ function blitzEnd() {
   bump('l');
   bump('s', 60);
   const prev = S.st.blitz || 0;
+  talBlitz();
   statMax('blitz', SES.score);
   statMax('combo', SES.best);
   markDay();
@@ -3996,7 +4285,7 @@ function renderTestRes(keep) {
       <p class="lead">${String(SES.pts).replace('.', ',')} von ${n} Punkten · ${SES.rec.p} % · +${fmtN(SES.txp)} XP</p>
       ${g >= 4 ? "<p class=\"lead\">Üb die roten Wörter nochmal – dann klappt's im echten Test!</p>" : ''}
     </div>
-    ${goalHTML(SES.xp0)}
+    ${talGainHTML()}${goalHTML(SES.xp0)}
     <div class="section-title"><h2>Deine Antworten</h2><span class="kicker">${items.filter(it => it.pts === 1).length} von ${n} richtig</span></div>
     <div class="t-review">${rows}</div>`;
   if (keep) $('#ses-scroll').scrollTop = sc;
@@ -4010,6 +4299,7 @@ ACT['t-fix'] = el => {
   it.over = true;
   gradeTestItem(it);
   bump('ok');
+  bump('fx');
   testScore();
   renderTestRes(true);
   animateGoal();
@@ -4021,6 +4311,764 @@ function testPractice() {
   const list = SES.items.filter(it => it.pts < 1).map(it => it.w).slice(0, 12);
   closeSession();
   if (list.length) startSession('oops', { words: list });
+}
+</script>
+<script>
+/* Wortfuchs – Fuchstaler: beim Lernen verdienen, für Wort-Snake ausgeben oder gegen
+   Bildschirmzeit einlösen (Anfrage-Code → Freigabe-Code vom gekoppelten Eltern-Handy).
+   Baut auf kern.js, ui.js, views.js und ueben.js auf. */
+'use strict';
+
+// ======================= Konto =======================
+// Taler-Tageswerte in S.days: c verdient, cx XP-Topf zum nächsten Taler, sp für Snake ausgegeben,
+// bz Blitz-Taler heute schon vergeben, fx „Ich hatte recht“. Eingelöst wird über das Protokoll S.red.
+const TAL_MIN = [0, 5, 10, 15, 20, 30];   // Ziffer in der Anfrage → Minuten
+const TAL_ASK = [2, 3, 4, 5];             // das Kind fragt 10/15/20/30 Min an
+const TAL_UNLOCK = 9;                     // Anfrage „Einstellungen entsperren“
+const PAR_KEY = 'wortfuchs.eltern';       // Geheimnis des Eltern-Handys, nur in diesem Browser
+
+const talOn = () => S.set.tal !== false;
+const talRate = () => S.set.tk || 60;
+const talSpent = () => sum(S.red.map(x => x.min || 0));
+function talBalance() {
+  let n = 0;
+  for (const d of Object.values(S.days)) n += (d.c || 0) - (d.sp || 0);
+  return Math.max(0, n - talSpent());
+}
+// Was frei ist, wenn eine offene Anfrage schon Minuten reserviert
+const talFree = () => talBalance() - (S.req.c && S.req.o !== TAL_UNLOCK ? TAL_MIN[S.req.o] || 0 : 0);
+const talLocked = () => !!S.pair.k && !PAR.tal;
+
+// XP füllen den Topf; ist die Tages- oder Kontogrenze erreicht, verfällt er
+function talEarn(n) {
+  if (!talOn() || !(n > 0)) return;
+  const r = todayRec(), k = talRate();
+  r.cx = (r.cx || 0) + n;
+  while (r.cx >= k) {
+    r.cx -= k;
+    if ((r.c || 0) >= (S.set.td || 20) || talBalance() >= (S.set.tm || 60)) continue;
+    r.c = (r.c || 0) + 1;
+    if (SES) SES.tal = (SES.tal || 0) + 1;
+  }
+}
+// Blitz-Runde: nur die erste am Tag zählt, höchstens 3 Taler
+function talBlitz() {
+  if (!talOn() || !SES) return;
+  const r = todayRec();
+  if (r.bz) return;
+  r.bz = 1;
+  SES.talBz = true;
+  talEarn(Math.min(SES.xp, 3 * talRate()));
+}
+
+function talGainHTML() {
+  if (!talOn() || !SES) return '';
+  const n = SES.tal || 0, r = todayRec(), td = S.set.td || 20;
+  let txt = '';
+  if (n) txt = `<b>+${plural(n, 'Fuchstaler', 'Fuchstaler')}</b><span>Konto: ${talBalance()}</span>`;
+  else if (SES.kind === 'blitz' && !SES.talBz) txt = '<span>Blitz-Runden bringen nur einmal am Tag Taler.</span>';
+  else if ((r.c || 0) >= td) txt = `<span>Heute hast du alle ${td} Taler verdient – stark!</span>`;
+  else if (talBalance() >= (S.set.tm || 60)) txt = '<span>Dein Taler-Konto ist voll – lös erst welche ein.</span>';
+  else txt = `<span>Noch ${fmtN(talRate() - (r.cx || 0))} XP bis zum nächsten Taler</span>`;
+  return `<div class="tal-gain${n ? ' is-new' : ''}">${icon('coin')}${txt}</div>`;
+}
+
+// ======================= Codes =======================
+// cyrb53 – kurzer, schneller Hash; reicht für 4-stellige Freigabe-Codes
+function talHash(s) {
+  let h1 = 0xdeadbeef, h2 = 0x41c6ce57;
+  for (let i = 0; i < s.length; i++) {
+    const c = s.charCodeAt(i);
+    h1 = Math.imul(h1 ^ c, 2654435761);
+    h2 = Math.imul(h2 ^ c, 1597334677);
+  }
+  h1 = Math.imul(h1 ^ (h1 >>> 16), 2246822507) ^ Math.imul(h2 ^ (h2 >>> 13), 3266489909);
+  h2 = Math.imul(h2 ^ (h2 >>> 16), 2246822507) ^ Math.imul(h1 ^ (h1 >>> 13), 3266489909);
+  return 4294967296 * (2097151 & h2) + (h1 >>> 0);
+}
+const talCode = (K, req, o) => String(talHash(`${K}|${req}|${o}`) % 10000).padStart(4, '0');
+
+// Anfrage-Code: 3 Zufallsziffern + Option + Prüfziffer (fängt Tippfehler der Eltern ab)
+const reqCheck = s => String([1, 3, 7, 9].reduce((a, w, i) => a + w * +s[i], 0) % 10);
+const reqCode = (n, o) => n + o + reqCheck(n + o);
+function talNonce() {
+  const used = new Set(S.red.map(x => x.n));
+  let n;
+  do n = String(rnd(1000)).padStart(3, '0'); while (used.has(n) && used.size < 900);
+  return n;
+}
+const reqNone = () => ({ c: '', o: 0, n: 0, m: Date.now() });
+
+// Kopplungs-Code: 7 Zeichen + Prüfzeichen, ohne verwechselbare (0/O, 1/I/L)
+const PAIR_ABC = '23456789ABCDEFGHJKMNPQRSTUVWXYZ';
+const pairCheck = s => PAIR_ABC[[...s].reduce((h, c, i) => h + (i + 1) * PAIR_ABC.indexOf(c), 0) % PAIR_ABC.length];
+const pairNorm = s => String(s || '').toUpperCase().replace(/[^0-9A-Z]/g, '');
+const pairOk = k => k.length === 8 && [...k].every(c => PAIR_ABC.includes(c)) && pairCheck(k.slice(0, 7)) === k[7];
+const pairFmt = k => k.slice(0, 4) + '-' + k.slice(4);
+function pairNew() {
+  const a = new Uint8Array(7);
+  try { crypto.getRandomValues(a); } catch (e) { for (let i = 0; i < 7; i++) a[i] = rnd(256); }
+  const s = [...a].map(x => PAIR_ABC[x % PAIR_ABC.length]).join('');
+  return s + pairCheck(s);
+}
+function parKey() {
+  try { const k = localStorage.getItem(PAR_KEY) || ''; return pairOk(k) ? k : ''; } catch (e) { return ''; }
+}
+function parSetKey(k) {
+  try { if (k) localStorage.setItem(PAR_KEY, k); else localStorage.removeItem(PAR_KEY); return true; } catch (e) { return false; }
+}
+
+// ======================= Ansicht „Taler“ (Kind) =======================
+const pcOf = (v, max) => Math.min(100, max ? v / max * 100 : 0).toFixed(1);
+const clockOf = t => new Date(t).toLocaleTimeString('de-DE', { hour: '2-digit', minute: '2-digit' });
+
+VIEWS.taler = () => {
+  const el = $('#v-taler');
+  if (!talOn()) {
+    el.innerHTML = `<div class="wrap"><div class="card hero-empty">${fox()}<h1>Fuchstaler sind aus</h1>
+      <p>Deine Eltern können sie im Eltern-Bereich einschalten.</p></div></div>`;
+    return;
+  }
+  const bal = talBalance(), r = S.days[dayKey(today())] || {}, k = talRate(), td = S.set.td || 20, tm = S.set.tm || 60;
+  const got = r.c || 0, cx = r.cx || 0, full = got >= td || bal >= tm;
+  const note = got >= td ? `Heute hast du alle ${td} Taler verdient – super!`
+    : bal >= tm ? `Dein Konto ist voll (${tm}). Lös erst welche ein!`
+    : `Noch ${fmtN(k - cx)} XP bis zum nächsten Taler`;
+  const free = talFree();
+  const playWhy = free < 1 ? (bal ? 'Deine Taler sind für die Anfrage reserviert.' : 'Keine Taler mehr – lern ein bisschen, dann geht es weiter!') : '';
+  const rec = S.st.snake || 0;
+  const recent = S.red.filter(x => !x.k).slice(-5).reverse()
+    .map(x => `<li><span>${fmtDay(dayNum(new Date(x.t)))}, ${clockOf(x.t)}</span><b>${x.min} Min</b></li>`).join('');
+
+  el.innerHTML = `<div class="wrap">
+    <div class="page-head"><h1>Fuchstaler</h1></div>
+    <div class="card tal-hero">
+      <div class="tal-coin" aria-hidden="true">${icon('coin')}</div>
+      <div class="tal-bal"><span class="kicker">Dein Konto</span><b>${bal}</b><span>${bal === 1 ? 'Taler = 1 Minute' : `Taler = ${bal} Minuten`} Bildschirmzeit</span></div>
+      <div class="tal-prog">
+        <div class="tal-row"><span>Heute verdient</span><b>${got} / ${td}</b></div>
+        <div class="xpbar tal-bar"><i style="width:${pcOf(got, td)}%"></i></div>
+        <div class="tal-row"><span>Nächster Taler</span><b>${full ? '–' : `${fmtN(cx)} / ${fmtN(k)} XP`}</b></div>
+        <div class="xpbar tal-bar is-next"><i style="width:${full ? 0 : pcOf(cx, k)}%"></i></div>
+        <p class="tal-note">${note}</p>
+      </div>
+    </div>
+    <div class="tal-grid">
+      <div class="card tal-game">
+        <div class="tal-game-art" aria-hidden="true">${snArt()}</div>
+        <div class="card-h"><h2>Wort-Snake</h2>${rec ? `<span class="kicker">Rekord ${fmtN(rec)}</span>` : ''}</div>
+        <p class="muted">Friss die Buchstaben in der richtigen Reihenfolge – oben steht das deutsche Wort. 90 Sekunden, 3 Herzen.</p>
+        <button class="btn btn-primary btn-block" type="button" data-act="sn-open"${playWhy ? ` aria-disabled="true" data-why="${esc(playWhy)}"` : ''}>${icon('gamepad')}Spielen · 1 Taler</button>
+      </div>
+      <div class="card tal-redeem">
+        <div class="card-h"><h2>Bildschirmzeit</h2>${icon('smartphone')}</div>
+        ${redeemHTML(bal)}
+      </div>
+    </div>
+    <div class="card"><div class="card-h"><h2>So verdienst du Taler</h2></div><ul class="explain">
+      <li><b>${fmtN(k)} XP = 1 Taler</b> – das sind etwa ${plural(Math.max(1, Math.round(k / 30)), 'Minute', 'Minuten')} Lernen.</li>
+      <li><b>1 Taler = 1 Minute</b> Bildschirmzeit oder eine Runde Wort-Snake.</li>
+      <li>Pro Tag kannst du bis zu <b>${td} Taler</b> verdienen. Auf dein Konto passen <b>${tm}</b>.</li>
+      <li>Die Blitz-Runde bringt nur <b>einmal am Tag</b> Taler (höchstens 3).</li></ul></div>
+    ${recent ? `<div class="card"><div class="card-h"><h2>Zuletzt eingelöst</h2></div><ul class="tal-list">${recent}</ul></div>` : ''}
+  </div>`;
+};
+
+function redeemHTML(bal) {
+  if (!S.pair.k) {
+    return `<p class="muted">Damit du Taler einlösen kannst, koppeln deine Eltern Wortfuchs einmal mit ihrem Handy – im Eltern-Bereich unter „Fuchstaler einrichten“.</p>
+      ${askBtns(TAL_ASK.map(o => [o, 'Erst koppeln – frag deine Eltern.']))}`;
+  }
+  if (S.req.c && S.req.o !== TAL_UNLOCK) return reqBoxHTML();
+  return `<p class="muted">Wie viel möchtest du einlösen? Du bekommst einen Code für deine Eltern.</p>
+    ${askBtns(TAL_ASK.map(o => [o, bal < TAL_MIN[o] ? `Dafür brauchst du ${TAL_MIN[o]} Taler – du hast ${bal}.` : '']))}`;
+}
+const askBtns = list => `<div class="tal-ask">${list.map(([o, why]) =>
+  `<button class="btn btn-ghost" type="button" data-act="tal-ask" data-o="${o}"${why ? ` aria-disabled="true" data-why="${esc(why)}"` : ''}><b>${TAL_MIN[o]}</b> Min</button>`).join('')}</div>`;
+
+// Offene Anfrage: Code zeigen, Freigabe-Code eintippen (Kind: Minuten, Eltern am Kindergerät: Entsperren)
+function reqBoxHTML() {
+  const q = S.req, code = reqCode(q.c, q.o), unlock = q.o === TAL_UNLOCK;
+  return `<div class="req-box">
+    <p>${unlock ? 'Anfrage: <b>Einstellungen entsperren</b>' : `Anfrage über <b>${TAL_MIN[q.o]} Minuten</b>`}</p>
+    <div class="req-code" role="text" aria-label="Anfrage-Code ${[...code].join(' ')}">${code.slice(0, 3)}<span>${code.slice(3)}</span></div>
+    <p class="muted">${unlock ? 'Tippen Sie diesen Code am Eltern-Handy ein (Eltern → Freigabe erteilen) und den Freigabe-Code hier.'
+      : 'Zeig den Code deinen Eltern. Sie tippen ihn an ihrem Handy ein und sagen dir den Freigabe-Code.'}</p>
+    <form class="gate-row" data-form="tal-ok" autocomplete="off"><input class="field code-in" id="tal-in" inputmode="numeric" maxlength="4" placeholder="4 Ziffern" aria-label="Freigabe-Code, 4 Ziffern">
+      <button class="btn btn-primary" type="submit">${unlock ? 'Entsperren' : 'Einlösen'}</button></form>
+    <button class="btn btn-quiet btn-sm" type="button" data-act="tal-cancel">Anfrage abbrechen</button></div>`;
+}
+
+const whyToast = el => { if (el.getAttribute('aria-disabled') !== 'true') return false; toast(esc(el.dataset.why || '')); return true; };
+const talRedraw = () => { renderNav(); if (VIEWS[VIEW]) VIEWS[VIEW](false); };
+
+ACT['tal-ask'] = el => {
+  if (whyToast(el)) return;
+  S.req = { c: talNonce(), o: +el.dataset.o, n: 0, m: Date.now() };
+  commit();
+  Sfx.play('tap');
+  talRedraw();
+  const i = $('#tal-in');
+  if (i) i.focus({ preventScroll: true });
+};
+ACT['tal-cancel'] = () => { S.req = reqNone(); commit(); talRedraw(); };
+ACT['tal-unlock'] = () => {
+  if (!S.pair.k) return;
+  S.req = { c: talNonce(), o: TAL_UNLOCK, n: 0, m: Date.now() };
+  commit();
+  VIEWS.parents(false);
+};
+
+SUB['tal-ok'] = () => {
+  const inp = $('#tal-in'), v = inp.value.replace(/\D/g, ''), q = S.req, K = S.pair.k;
+  if (!q.c || !K) return;
+  if (v.length !== 4) { toast('Der Freigabe-Code hat 4 Ziffern.'); return; }
+  const opts = q.o === TAL_UNLOCK ? [TAL_UNLOCK] : TAL_MIN.map((_, o) => o).filter(o => o >= 1 && o <= q.o);
+  const o = opts.find(x => talCode(K, q.c, x) === v);
+  if (!o) {
+    q.n = (q.n || 0) + 1;
+    q.m = Date.now();
+    if (q.n >= 3) { S.req = reqNone(); toast('3-mal falsch – stell eine neue Anfrage.'); }
+    else toast(`Der Code stimmt nicht. Noch ${plural(3 - q.n, 'Versuch', 'Versuche')}.`);
+    commit();
+    Sfx.play('bad');
+    talRedraw();
+    const i = $('#tal-in');
+    if (i) i.focus({ preventScroll: true });
+    return;
+  }
+  const t = Date.now(), unlock = o === TAL_UNLOCK;
+  const min = unlock ? 0 : Math.min(TAL_MIN[o], talBalance());
+  S.red.push(unlock ? { id: `${q.c}-${t.toString(36)}`, t, n: q.c, min: 0, k: 's' } : { id: `${q.c}-${t.toString(36)}`, t, n: q.c, min });
+  S.req = reqNone();
+  commit();
+  $('#toast').hidden = true;
+  if (unlock) { PAR.tal = true; Sfx.play('ok'); toast('Entsperrt'); VIEWS.parents(false); return; }
+  talRedraw();
+  Sfx.play('win');
+  confetti();
+  Modal.show(`${fox('happy')}<h2 id="modal-title">${min} Minuten freigegeben!</h2>
+    <p>Deine Eltern stellen die Zeit jetzt an deinem Handy ein. Viel Spaß – und bis bald beim Lernen!</p>
+    <div class="modal-btns"><button class="btn btn-primary" type="button" data-act="modal-close" autofocus>Super!</button></div>`);
+};
+
+// ======================= Eltern =======================
+const FG = { req: '', max: 0, o: 0 };   // Freigabe am Eltern-Handy: Anfrage, angefragte Option, gewählte Option
+
+// Oben im Eltern-Bereich – nur auf dem Eltern-Handy
+function fgCardHTML() {
+  const K = parKey();
+  if (!K) return '';
+  let body;
+  if (!FG.req) {
+    body = `<p>Ihr Kind zeigt Ihnen einen Anfrage-Code mit 5 Ziffern. Tippen Sie ihn hier ein:</p>
+      <form class="gate-row" data-form="fg" autocomplete="off"><input class="field code-in" id="fg-in" inputmode="numeric" maxlength="6" placeholder="5 Ziffern" aria-label="Anfrage-Code">
+      <button class="btn btn-primary" type="submit">Weiter</button></form>`;
+  } else if (!FG.o) {
+    const opts = TAL_MIN.map((m, o) => [m, o]).filter(([, o]) => o >= 1 && o <= FG.max);
+    body = `<p>Ihr Kind fragt nach <b>${TAL_MIN[FG.max]} Minuten</b>. Wie viel geben Sie frei?</p>
+      <div class="tal-ask">${opts.map(([m, o]) => `<button class="btn ${o === FG.max ? 'btn-primary' : 'btn-ghost'}" type="button" data-act="fg-pick" data-o="${o}"><b>${m}</b> Min</button>`).join('')}</div>
+      <button class="btn btn-quiet btn-sm" type="button" data-act="fg-new">Abbrechen</button>`;
+  } else {
+    const unlock = FG.o === TAL_UNLOCK, m = TAL_MIN[FG.o];
+    body = `<p>${unlock ? 'Freigabe-Code zum <b>Entsperren der Einstellungen</b>:' : `Freigabe-Code für <b>${m} Minuten</b>:`}</p>
+      <div class="fg-code">${talCode(K, FG.req, FG.o)}</div>
+      <p class="muted">${unlock ? 'Am Gerät Ihres Kindes eintippen.'
+        : `Ihr Kind tippt ihn ein, dann werden ${m} Taler abgezogen. Die ${m} Minuten geben Sie danach selbst frei – iPhone: Bildschirmzeit, Android: Family Link („Bonuszeit“).`}</p>
+      <button class="btn btn-ghost btn-sm" type="button" data-act="fg-new">Neue Anfrage</button>`;
+  }
+  return `<div class="card fg-card"><div class="card-h"><h2>Freigabe erteilen</h2><span class="kicker">Eltern-Handy</span></div>${body}
+    <div class="fg-foot"><button class="btn btn-quiet btn-sm" type="button" data-act="fg-show">Kopplungs-Code zeigen</button>
+    <button class="btn btn-quiet btn-sm" type="button" data-act="fg-off">Abmelden</button></div></div>`;
+}
+SUB.fg = () => {
+  const v = $('#fg-in').value.replace(/\D/g, ''), o = +v[3];
+  if (v.length !== 5 || reqCheck(v.slice(0, 4)) !== v[4] || !(o === TAL_UNLOCK || (o >= 1 && o < TAL_MIN.length))) {
+    toast('Dieser Anfrage-Code stimmt nicht – bitte noch einmal ablesen.');
+    return;
+  }
+  Object.assign(FG, { req: v.slice(0, 3), max: o, o: o === TAL_UNLOCK ? o : 0 });
+  VIEWS.parents(false);
+};
+ACT['fg-pick'] = el => { FG.o = +el.dataset.o; VIEWS.parents(false); };
+ACT['fg-new'] = () => {
+  Object.assign(FG, { req: '', max: 0, o: 0 });
+  VIEWS.parents(false);
+  const i = $('#fg-in');
+  if (i) i.focus({ preventScroll: true });
+};
+ACT['fg-show'] = () => {
+  const K = parKey();
+  if (!K) return;
+  Modal.show(`<h2 id="modal-title">Kopplungs-Code</h2><div class="fg-code fg-pair">${pairFmt(K)}</div>
+    <p>Damit koppeln Sie das Gerät Ihres Kindes (Eltern → Fuchstaler einrichten) oder ein zweites Eltern-Handy. Bitte nicht dem Kind zeigen.</p>
+    <div class="modal-btns"><button class="btn btn-primary" type="button" data-act="modal-close" autofocus>Fertig</button></div>`);
+};
+ACT['fg-off'] = async () => {
+  const K = parKey();
+  if (!K) return;
+  const yes = await ask({ title: 'Eltern-Handy abmelden?', danger: true, yes: 'Abmelden',
+    text: `Danach kann dieses Handy keine Freigaben mehr erzeugen. Notieren Sie vorher den Kopplungs-Code: <b>${pairFmt(K)}</b>` });
+  if (!yes) return;
+  parSetKey('');
+  Object.assign(FG, { req: '', max: 0, o: 0 });
+  VIEWS.parents(false);
+};
+
+// Weiter unten im Eltern-Bereich: Bericht, Kopplung, Einstellungen
+function talParentHTML() {
+  const t = today(), K = parKey(), td = S.set.td || 20, tm = S.set.tm || 60, k = talRate();
+  let fx = 0, c7 = 0;
+  for (let i = 0; i < 7; i++) { const r = S.days[dayKey(t - i)] || {}; fx += r.fx || 0; c7 += r.c || 0; }
+  const red7 = S.red.filter(x => !x.k && dayNum(new Date(x.t)) > t - 7);
+  const rows = S.red.slice(-10).reverse().map(x => `<tr><td>${fmtDay(dayNum(new Date(x.t)))}, ${clockOf(x.t)}</td><td>${x.k ? 'Einstellungen entsperrt' : `${x.min} Min`}</td></tr>`).join('');
+  const report = `<div class="card"><div class="card-h"><h2>Fuchstaler</h2><span class="kicker">letzte 7 Tage</span></div>
+    <div class="kpis">
+      <div class="kpi"><span>Kontostand</span><b>${talBalance()}</b><em>höchstens ${tm}</em></div>
+      <div class="kpi"><span>Verdient</span><b>${c7}</b><em>heute ${(S.days[dayKey(t)] || {}).c || 0} von ${td}</em></div>
+      <div class="kpi"><span>Eingelöst</span><b>${sum(red7.map(x => x.min))} min</b><em>${plural(red7.length, 'Mal', 'Mal')}</em></div>
+      <div class="kpi"><span>„Ich hatte recht“</span><b>${fx}</b><em>selbst als richtig gewertet</em></div>
+    </div>
+    ${rows ? `<div class="tbl-wrap tal-tbl"><table class="tbl"><thead><tr><th>Wann</th><th>Eingelöst</th></tr></thead><tbody>${rows}</tbody></table></div>` : '<p class="muted tal-none">Noch nichts eingelöst.</p>'}
+    <ul class="explain">
+      <li><b>Kurs:</b> ${fmtN(k)} XP = 1 Taler = 1 Minute Bildschirmzeit – etwa ${Math.max(1, Math.round(k / 30))} Minuten Lernen für 1 Minute.</li>
+      <li><b>Einlösen:</b> Ihr Kind zeigt einen Anfrage-Code. Ihr gekoppeltes Handy erzeugt daraus einen Freigabe-Code – erst damit werden Taler abgezogen. Sie können auch weniger freigeben als angefragt.</li>
+      <li><b>Die Zeit selbst</b> geben Sie frei: iPhone über die Bildschirmzeit (z. B. „Um mehr Zeit bitten“ annehmen), Android über Family Link („Bonuszeit“). Wortfuchs kann das Handy nicht selbst freischalten.</li></ul></div>`;
+
+  let pair;
+  if (K) pair = `<p class="tal-pair-ok">${icon('smartphone')}<span>Dieses Gerät ist <b>Ihr Eltern-Handy</b>. Freigaben erteilen Sie oben unter „Freigabe erteilen“.</span></p>`;
+  else if (S.pair.k) pair = `<p class="tal-pair-ok">${icon('check')}<span>Mit Ihrem Eltern-Handy gekoppelt (seit ${fmtDay(dayNum(new Date(S.pair.m)))}).</span></p>`;
+  else {
+    pair = `<ol class="explain">
+      <li>Öffnen Sie Wortfuchs auf <b>Ihrem eigenen Handy</b>, gehen Sie auf „Eltern“ und tippen Sie dort auf „Dieses Handy ist das Eltern-Handy“.</li>
+      <li>Ihr Handy zeigt einen Kopplungs-Code. Tippen Sie ihn hier ein:</li></ol>
+      <form class="gate-row" data-form="pair" autocomplete="off"><input class="field code-in" id="pair-in" maxlength="9" placeholder="XXXX-XXXX" autocapitalize="characters" spellcheck="false" aria-label="Kopplungs-Code">
+      <button class="btn btn-primary" type="submit">Koppeln</button></form>
+      <div class="set-row tal-dev"><div><span class="lbl">Ist das hier Ihr eigenes Handy?</span><small>Dann wird es zum Eltern-Handy, das Freigabe-Codes erzeugt.</small></div>
+      <button class="btn btn-ghost btn-sm" type="button" data-act="par-dev">${icon('smartphone')}Dieses Handy ist das Eltern-Handy</button></div>`;
+  }
+
+  const lock = talLocked(), dis = lock ? ' disabled' : '';
+  const sel = (ch, cur, opts, label) => `<select class="select" data-ch="${ch}" aria-label="${label}"${dis}>${opts.map(([v, l]) => `<option value="${v}"${v === cur ? ' selected' : ''}>${l}</option>`).join('')}</select>`;
+  const lockRow = !lock ? '' : S.req.c && S.req.o === TAL_UNLOCK ? reqBoxHTML()
+    : `<div class="tal-lock">${icon('lock')}<div><b>Gesperrt</b><small>Damit Ihr Kind hier nichts ändert. Entsperren Sie mit einem Freigabe-Code vom Eltern-Handy.</small></div>
+      <button class="btn btn-ghost btn-sm" type="button" data-act="tal-unlock">Entsperren</button></div>`;
+  const onRow = switchRow('tal-on', talOn(), 'Fuchstaler', 'Taler fürs Lernen, Wort-Snake und Bildschirmzeit').replace('<input ', `<input${dis} `);
+  return `${report}
+    <div class="card settings tal-set"><div class="card-h"><h2>Fuchstaler einrichten</h2></div>
+      ${pair}
+      ${lockRow}
+      ${onRow}
+      <div class="set-row"><div><span class="lbl">Kurs</span><small>Wie viel XP ein Taler (1 Minute) kostet</small></div>${sel('tal-tk', k, [[30, '30 XP – etwa 1:1'], [60, '60 XP – etwa 2:1'], [90, '90 XP – etwa 3:1']], 'Kurs')}</div>
+      <div class="set-row"><div><span class="lbl">Höchstens pro Tag</span></div>${sel('tal-td', td, [5, 10, 15, 20, 30, 45, 60].map(n => [n, `${n} Taler`]), 'Höchstens pro Tag')}</div>
+      <div class="set-row"><div><span class="lbl">Höchstens auf dem Konto</span></div>${sel('tal-tm', tm, [30, 60, 90, 120].map(n => [n, `${n} Taler`]), 'Höchstens auf dem Konto')}</div>
+      ${S.pair.k && !K ? `<div class="set-row"><div><span class="lbl">Kopplung lösen</span><small>Danach kann Ihr Kind keine Taler mehr einlösen.</small></div>
+        <button class="btn btn-ghost btn-sm" type="button" data-act="pair-off"${lock ? ' aria-disabled="true" data-why="Erst entsperren – mit einem Freigabe-Code vom Eltern-Handy."' : ''}>Lösen</button></div>` : ''}
+    </div>`;
+}
+
+function talSet(k, v) {
+  if (talLocked()) { toast('Gesperrt – erst mit einem Freigabe-Code entsperren.'); VIEWS.parents(false); return; }
+  setSet(k, v);
+}
+CHG['tal-on'] = el => { talSet('tal', el.checked); renderNav(); };
+CHG['tal-tk'] = el => talSet('tk', +el.value);
+CHG['tal-td'] = el => talSet('td', +el.value);
+CHG['tal-tm'] = el => talSet('tm', +el.value);
+
+SUB.pair = () => {
+  const k = pairNorm($('#pair-in').value);
+  if (parKey()) { toast('Das ist das Eltern-Handy – koppeln geht nur am Gerät Ihres Kindes.'); return; }
+  if (!pairOk(k)) { toast('Der Code stimmt nicht. Er hat 8 Zeichen, z. B. AB3D-7KQ9.'); return; }
+  S.pair = { k, m: Date.now() };
+  S.req = reqNone();
+  commit();
+  Sfx.play('ok');
+  toast('Gekoppelt!');
+  talRedraw();
+};
+ACT['par-dev'] = async () => {
+  if (S.pair.k) { toast('Dieses Gerät ist schon gekoppelt – es ist das Gerät Ihres Kindes.'); return; }
+  const inp = $('#pair-in'), typed = pairNorm(inp ? inp.value : ''), take = pairOk(typed);
+  const yes = await ask({ title: 'Ist das Ihr Eltern-Handy?', yes: 'Ja, Eltern-Handy', no: 'Abbrechen',
+    text: take ? 'Dieses Handy übernimmt den eingetippten Kopplungs-Code und kann dann Freigabe-Codes erzeugen.'
+      : 'Dieses Handy bekommt einen neuen Kopplungs-Code. Damit koppeln Sie danach das Gerät Ihres Kindes.' });
+  if (!yes) return;
+  if (!parSetKey(take ? typed : pairNew())) { toast('Dieser Browser kann nichts speichern (privates Fenster?).'); return; }
+  VIEWS.parents(false);
+  if (!take) ACT['fg-show']();
+};
+ACT['pair-off'] = async el => {
+  if (whyToast(el)) return;
+  const yes = await ask({ title: 'Kopplung lösen?', text: 'Ihr Kind kann danach keine Taler mehr einlösen, bis Sie neu koppeln.', yes: 'Lösen', danger: true });
+  if (!yes) return;
+  S.pair = { k: '', m: Date.now() };
+  S.req = reqNone();
+  commit();
+  talRedraw();
+};
+ACT['ob-parent'] = () => {
+  S.onb = true;
+  commit();
+  closeOnboarding();
+  go('parents');
+};
+
+// ======================= Wort-Snake =======================
+const SN_N = 12, SN_TIME = 90000, SN_HEARTS = 3;
+const SN_DIR = { u: [0, -1], d: [0, 1], l: [-1, 0], r: [1, 0] };
+const SN_OPP = { u: 'd', d: 'u', l: 'r', r: 'l' };
+const SN_KEYS = { ArrowUp: 'u', ArrowDown: 'd', ArrowLeft: 'l', ArrowRight: 'r', w: 'u', s: 'd', a: 'l', d: 'r', W: 'u', S: 'd', A: 'l', D: 'r' };
+const SN = { on: false, phase: '', raf: 0, cv: null, cx: null, col: null, sw: null };
+
+// Kleines Bild für die Karte in der Taler-Ansicht
+function snArt() {
+  const cells = [[1, 3], [2, 3], [3, 3], [3, 2], [4, 2], [5, 2]];
+  return `<svg viewBox="0 0 80 40">${cells.map(([x, y], i) => `<rect x="${x * 10 + 1}" y="${y * 10 - 9}" width="9" height="9" rx="3" class="${i === cells.length - 1 ? 'sa-head' : 'sa-body'}"/>`).join('')}
+    <circle cx="69" cy="15" r="6" class="sa-item"/><text x="69" y="18.5" class="sa-ch">a</text></svg>`;
+}
+
+function snWords() {
+  const ok = w => /^[a-z]{3,8}$/.test(w.plain);
+  let list = knownWords(sesPool()).filter(ok);
+  if (list.length < 4) list = sesPool().filter(ok);
+  if (list.length < 4) list = WORDS.filter(ok);
+  return shuffle(list);
+}
+
+ACT['sn-open'] = el => {
+  if (whyToast(el)) return;
+  SN.on = true;
+  SN.phase = 'intro';
+  const root = $('#snake');
+  root.innerHTML = `<div class="sn">
+    <div class="sn-top"><button class="icon-btn" type="button" id="sn-x" data-act="sn-quit" aria-label="Wort-Snake beenden">${icon('x')}</button>
+      <div class="sn-hearts" id="sn-hearts" aria-label="Herzen"></div><div class="sn-score" id="sn-score" aria-label="Punkte">0</div><div class="sn-time" id="sn-time">${fmtTime(SN_TIME / 1000)}</div></div>
+    <div class="sn-hint" id="sn-hint" aria-live="polite"></div>
+    <div class="sn-stage" id="sn-stage"><canvas id="sn-cv" aria-label="Spielfeld" role="img"></canvas><div class="sn-over" id="sn-over"></div></div>
+    <div class="sn-pad" aria-label="Steuerung">${[['u', 'arrow-up', 'Hoch'], ['l', 'arrow-left', 'Links'], ['d', 'arrow-down', 'Runter'], ['r', 'arrow-right', 'Rechts']]
+      .map(([d, ic, l]) => `<button class="sn-btn sn-${d}" type="button" data-act="sn-dir" data-d="${d}" aria-label="${l}">${icon(ic)}</button>`).join('')}</div></div>`;
+  root.hidden = false;
+  document.body.classList.add('ses-open');
+  for (const s of BEHIND) $(s).inert = true;
+  SN.cv = $('#sn-cv');
+  SN.cx = SN.cv.getContext('2d');
+  snColors();
+  snReset();
+  snFit();
+  snIntro();
+};
+
+function snColors() {
+  const cs = getComputedStyle(document.documentElement), v = n => cs.getPropertyValue(n).trim();
+  SN.col = { a: v('--card'), b: v('--card-2'), ink: v('--ink'), body: v('--good'), head: v('--good-deep'), item: v('--gold-soft'),
+    ring: v('--gold'), bad: v('--bad'), font: v('--f-display') || 'system-ui, sans-serif' };
+}
+
+function snReset() {
+  const c = SN_N >> 1;
+  Object.assign(SN, { body: [[c, c], [c - 1, c], [c - 2, c]], dir: 'r', q: [], grow: 0, hearts: SN_HEARTS, score: 0, done: [],
+    left: SN_TIME, ms: 170, acc: 0, last: 0, hold: 0, list: snWords(), wi: 0, items: [], hud: '' });
+  snWord();
+}
+function snWord() {
+  SN.word = SN.list[SN.wi++ % SN.list.length];
+  SN.w = SN.word.plain;
+  SN.idx = 0;
+  snSpawn();
+  snHint();
+}
+// Gesuchter Buchstabe + 2 Köder (einer davon möglichst aus dem Rest des Worts)
+function snSpawn() {
+  const want = SN.w[SN.idx];
+  const rest = shuffle([...new Set(SN.w.slice(SN.idx + 1))].filter(ch => ch !== want));
+  const abc = shuffle([...'abcdefghijklmnopqrstuvwxyz'].filter(ch => ch !== want && !rest.includes(ch)));
+  const decoys = [...rest.slice(0, 1), ...abc].slice(0, 2);
+  const taken = new Set(SN.body.map(p => p.join()));
+  const [hx, hy] = SN.body[0];
+  const free = [];
+  for (let y = 0; y < SN_N; y++) for (let x = 0; x < SN_N; x++) if (!taken.has(x + ',' + y)) free.push([x, y]);
+  const far = free.filter(([x, y]) => Math.abs(x - hx) + Math.abs(y - hy) >= 3);
+  const spots = shuffle(far.length >= 3 ? far : free);
+  SN.items = [want, ...decoys].map((ch, i) => ({ ch, ok: i === 0, x: spots[i][0], y: spots[i][1] }));
+}
+
+function snHint(done) {
+  const h = $('#sn-hint');
+  if (!h) return;
+  const slots = [...SN.w].map((ch, i) => i < SN.idx || done ? `<b>${esc(ch)}</b>` : '<i></i>').join('');
+  h.className = 'sn-hint' + (done ? ' is-done' : '');
+  h.innerHTML = `<div class="sn-de"><span>${esc(deShort(SN.word))}</span>${TTS.ok && S.set.tts ? `<button class="icon-btn sn-say" type="button" data-act="sn-say" aria-label="Wort anhören">${icon('volume')}</button>` : ''}</div>
+    <div class="sn-slots" lang="en" aria-label="${done ? esc(SN.w) : `${SN.idx} von ${SN.w.length} Buchstaben`}">${slots}</div>`;
+}
+ACT['sn-say'] = () => sayWord(SN.word);
+
+function snHud() {
+  const s = `${SN.hearts}|${SN.score}|${Math.ceil(SN.left / 1000)}`;
+  if (s === SN.hud) return;
+  SN.hud = s;
+  $('#sn-hearts').innerHTML = [0, 1, 2].map(i => `<span class="${i < SN.hearts ? 'on' : ''}">${icon('heart', 'ic-fill')}</span>`).join('');
+  $('#sn-hearts').setAttribute('aria-label', plural(SN.hearts, 'Herz', 'Herzen'));
+  $('#sn-score').textContent = fmtN(SN.score);
+  const sec = Math.max(0, Math.ceil(SN.left / 1000));
+  $('#sn-time').textContent = fmtTime(sec);
+  $('#sn-time').classList.toggle('is-low', sec <= 10);
+}
+
+function snOver(html) {
+  const o = $('#sn-over');
+  o.innerHTML = html ? `<div class="sn-card">${html}</div>` : '';
+  o.hidden = !html;
+  const f = $('#sn-over .btn-primary');
+  if (f) f.focus({ preventScroll: true });
+}
+function snStartBtn(label) {
+  const why = talOn() && talFree() < 1 ? 'Keine Taler mehr – lern ein bisschen, dann geht es weiter!' : '';
+  return `<button class="btn btn-primary" type="button" data-act="sn-start"${why ? ` aria-disabled="true" data-why="${esc(why)}"` : ''}>${icon('play', 'ic-fill')}${label}${talOn() ? ' · 1 Taler' : ''}</button>`;
+}
+function snIntro() {
+  snHud();
+  snDraw();
+  snOver(`<h2>Wort-Snake</h2>
+    <p>Friss die Buchstaben in der <b>richtigen Reihenfolge</b>. Oben steht das deutsche Wort.</p>
+    <p class="muted">Falscher Buchstabe oder Biss in den Schwanz: ein Herz weg.<br>Steuern: wischen, Pfeiltasten oder Knöpfe.</p>
+    ${snStartBtn('Start')}
+    <small class="muted">${S.st.snake ? `Rekord: ${fmtN(S.st.snake)} · ` : ''}${talOn() ? `Du hast ${plural(talBalance(), 'Taler', 'Taler')}` : ''}</small>`);
+}
+
+ACT['sn-start'] = el => {
+  if (whyToast(el)) return;
+  if (talOn()) { const r = todayRec(); r.sp = (r.sp || 0) + 1; commit(); }
+  if (SN.phase === 'end') snReset();
+  snOver('');
+  SN.phase = 'play';
+  SN.last = 0;
+  Sfx.play('start');
+  snHud();
+  SN.raf = requestAnimationFrame(snLoop);
+};
+
+function snLoop(t) {
+  if (SN.phase !== 'play') return;
+  const dt = SN.last ? Math.min(100, t - SN.last) : 0;
+  SN.last = t;
+  if (SN.hold > 0) {
+    SN.hold -= dt;
+    if (SN.hold <= 0) snWord();
+  } else {
+    SN.left -= dt;
+    SN.acc += dt;
+    while (SN.acc >= SN.ms && SN.phase === 'play' && SN.hold <= 0) { SN.acc -= SN.ms; snStep(); }
+  }
+  if (SN.phase === 'play' && SN.left <= 0) { snEnd(); return; }
+  if (SN.phase !== 'play') return;
+  snDraw();
+  snHud();
+  SN.raf = requestAnimationFrame(snLoop);
+}
+
+function snTurn(d) {
+  if (SN.phase !== 'play') return;
+  const last = SN.q.length ? SN.q[SN.q.length - 1] : SN.dir;
+  if (d === last || d === SN_OPP[last] || SN.q.length >= 3) return;
+  SN.q.push(d);
+}
+
+function snStep() {
+  if (SN.q.length) SN.dir = SN.q.shift();
+  const [dx, dy] = SN_DIR[SN.dir], [hx, hy] = SN.body[0];
+  const nx = (hx + dx + SN_N) % SN_N, ny = (hy + dy + SN_N) % SN_N;
+  SN.body.unshift([nx, ny]);
+  if (SN.grow > 0) SN.grow--; else SN.body.pop();
+  const bite = SN.body.findIndex((p, i) => i > 0 && p[0] === nx && p[1] === ny);
+  if (bite > 0) { SN.body = SN.body.slice(0, Math.max(3, bite)); snHurt(); if (SN.phase !== 'play') return; }
+  const it = SN.items.find(i => i.x === nx && i.y === ny);
+  if (!it) return;
+  if (!it.ok) {
+    SN.items = SN.items.filter(i => i !== it);
+    snHurt();
+    return;
+  }
+  SN.idx++;
+  SN.grow++;
+  SN.score += 10;
+  if (SN.idx < SN.w.length) { Sfx.play('pair'); snSpawn(); snHint(); return; }
+  // Wort fertig: Bonus, vorlesen, kurz innehalten, dann schneller weiter
+  SN.score += 5 * SN.w.length;
+  SN.done.push(SN.word);
+  SN.items = [];
+  SN.hold = 700;
+  SN.ms = Math.max(110, SN.ms - 8);
+  Sfx.play('combo');
+  sayWord(SN.word);
+  snHint(true);
+}
+
+function snHurt() {
+  SN.hearts--;
+  Sfx.play('bad');
+  const st = $('#sn-stage');
+  if (st && !REDUCED) { st.classList.remove('is-hit'); void st.offsetWidth; st.classList.add('is-hit'); }
+  if (SN.hearts <= 0) snEnd();
+}
+
+function snEnd() {
+  if (SN.phase === 'end') return;
+  cancelAnimationFrame(SN.raf);
+  SN.phase = 'end';
+  const prev = S.st.snake || 0, rec = SN.score > prev;
+  statMax('snake', SN.score);
+  statInc('sng');
+  commit();
+  snDraw();
+  snHud();
+  Sfx.play(rec && SN.score ? 'win' : 'level');
+  const chips = SN.done.slice(-8).map(w => `<span class="wchip"><span lang="en">${esc(w.plain)}</span> <span class="de">· ${esc(deShort(w))}</span></span>`).join('');
+  snOver(`<h2>${fmtN(SN.score)} Punkte</h2>
+    <p>${SN.left <= 0 ? 'Zeit um!' : SN.hearts <= 0 ? 'Keine Herzen mehr.' : ''} ${plural(SN.done.length, 'Wort', 'Wörter')} geschafft.</p>
+    <p class="sn-rec">${rec && SN.score ? (prev ? `Neuer Rekord – vorher ${fmtN(prev)}!` : 'Dein erster Rekord!') : `Rekord: ${fmtN(prev)}`}</p>
+    ${chips ? `<div class="wchips">${chips}</div>` : ''}
+    <div class="sn-btns">${snStartBtn('Nochmal')}<button class="btn btn-ghost" type="button" data-act="sn-close">Fertig</button></div>`);
+}
+
+function snPause(on) {
+  if (on && SN.phase === 'play') {
+    cancelAnimationFrame(SN.raf);
+    SN.phase = 'pause';
+    snOver(`<h2>Pause</h2><button class="btn btn-primary" type="button" data-act="sn-go">${icon('play', 'ic-fill')}Weiter</button>`);
+  } else if (!on && SN.phase === 'pause') {
+    snOver('');
+    SN.phase = 'play';
+    SN.last = 0;
+    SN.raf = requestAnimationFrame(snLoop);
+  }
+}
+ACT['sn-go'] = () => snPause(false);
+
+async function snQuit() {
+  if (SN.phase === 'play' || SN.phase === 'pause') {
+    snPause(true);
+    const yes = await ask({ title: 'Runde beenden?', text: 'Der Taler für diese Runde ist schon ausgegeben.', yes: 'Beenden', no: 'Weiterspielen', art: fox('sad'), stay: true });
+    if (!yes) { snPause(false); return; }
+    snEnd();
+  }
+  snClose();
+}
+ACT['sn-quit'] = () => snQuit();
+ACT['sn-close'] = () => snClose();
+
+function snClose() {
+  if (!SN.on) return;
+  cancelAnimationFrame(SN.raf);
+  Object.assign(SN, { on: false, phase: '', cv: null, cx: null, sw: null });
+  TTS.stop();
+  const root = $('#snake');
+  root.hidden = true;
+  root.innerHTML = '';
+  for (const s of BEHIND) $(s).inert = false;
+  if ($('#onboard').hidden) document.body.classList.remove('ses-open');
+  refresh();
+}
+
+// Knöpfe: sofort beim Antippen; Klick nur noch für die Tastatur (Enter/Leertaste)
+ACT['sn-dir'] = (el, e) => { if (!e.detail) snTurn(el.dataset.d); };
+$('#snake').addEventListener('pointerdown', e => {
+  const b = e.target.closest('[data-d]');
+  if (b) { e.preventDefault(); snTurn(b.dataset.d); return; }
+  if (e.target.closest('#sn-cv')) SN.sw = { x: e.clientX, y: e.clientY };
+});
+// Wischen übers Spielfeld, auch mehrmals ohne abzusetzen
+addEventListener('pointermove', e => {
+  if (!SN.sw) return;
+  const dx = e.clientX - SN.sw.x, dy = e.clientY - SN.sw.y;
+  if (Math.max(Math.abs(dx), Math.abs(dy)) < 22) return;
+  snTurn(Math.abs(dx) > Math.abs(dy) ? (dx > 0 ? 'r' : 'l') : (dy > 0 ? 'd' : 'u'));
+  SN.sw = { x: e.clientX, y: e.clientY };
+});
+for (const ev of ['pointerup', 'pointercancel']) addEventListener(ev, () => { SN.sw = null; });
+addEventListener('resize', () => { if (SN.on) snFit(); });
+document.addEventListener('visibilitychange', () => { if (document.hidden) snPause(true); });
+
+function snKey(e) {
+  const k = e.key;
+  if (k === 'Tab') { trapFocus(e, $('#snake')); return; }
+  if (e.altKey || e.ctrlKey || e.metaKey) return;
+  if (k === 'Escape') { e.preventDefault(); snQuit(); return; }
+  const d = SN_KEYS[k];
+  if (d && SN.phase === 'play') { e.preventDefault(); snTurn(d); return; }
+  if (k === ' ' || k === 'p' || k === 'P') {
+    if (SN.phase === 'play' || SN.phase === 'pause') { e.preventDefault(); snPause(SN.phase === 'play'); }
+  }
+}
+
+// ---------- Zeichnen ----------
+function snFit() {
+  const cv = SN.cv;
+  if (!cv) return;
+  const w = cv.getBoundingClientRect().width, px = Math.round(w * Math.min(2, devicePixelRatio || 1));
+  if (px && cv.width !== px) cv.width = cv.height = px;
+  snDraw();
+}
+function snRect(cx, x, y, w, h, r) {
+  cx.beginPath();
+  cx.moveTo(x + r, y);
+  cx.arcTo(x + w, y, x + w, y + h, r);
+  cx.arcTo(x + w, y + h, x, y + h, r);
+  cx.arcTo(x, y + h, x, y, r);
+  cx.arcTo(x, y, x + w, y, r);
+  cx.closePath();
+}
+function snDraw() {
+  const cx = SN.cx, C = SN.col;
+  if (!cx || !C) return;
+  const W = SN.cv.width, s = W / SN_N;
+  cx.fillStyle = C.a;
+  cx.fillRect(0, 0, W, W);
+  cx.fillStyle = C.b;
+  for (let y = 0; y < SN_N; y++) for (let x = (y & 1); x < SN_N; x += 2) cx.fillRect(x * s, y * s, s, s);
+  cx.textAlign = 'center';
+  cx.textBaseline = 'middle';
+  // Buchstaben – alle gleich, man muss das Wort kennen
+  cx.font = `600 ${Math.round(s * 0.6)}px ${C.font}`;
+  for (const it of SN.items) {
+    const mx = (it.x + 0.5) * s, my = (it.y + 0.5) * s;
+    cx.beginPath();
+    cx.arc(mx, my, s * 0.42, 0, Math.PI * 2);
+    cx.fillStyle = C.item;
+    cx.fill();
+    cx.lineWidth = Math.max(1.5, s * 0.07);
+    cx.strokeStyle = C.ring;
+    cx.stroke();
+    cx.fillStyle = C.ink;
+    cx.fillText(it.ch, mx, my + s * 0.03);
+  }
+  // Schlange; die schon gefressenen Buchstaben stehen hinter dem Kopf
+  const p = s * 0.08;
+  cx.font = `700 ${Math.round(s * 0.5)}px ${C.font}`;
+  for (let i = SN.body.length - 1; i >= 0; i--) {
+    const [x, y] = SN.body[i];
+    snRect(cx, x * s + p, y * s + p, s - 2 * p, s - 2 * p, s * 0.28);
+    cx.fillStyle = i === 0 ? C.head : C.body;
+    cx.fill();
+    if (i > 0 && i <= SN.idx && SN.hold <= 0) {
+      cx.fillStyle = '#fff';
+      cx.fillText(SN.w[SN.idx - i], (x + 0.5) * s, (y + 0.53) * s);
+    }
+  }
+  // Augen in Laufrichtung
+  const [hx, hy] = SN.body[0], [dx, dy] = SN_DIR[SN.dir];
+  const ex = (hx + 0.5 + dx * 0.16) * s, ey = (hy + 0.5 + dy * 0.16) * s;
+  for (const k of [-1, 1]) {
+    const ox = ex + dy * k * s * 0.2, oy = ey + dx * k * s * 0.2;
+    cx.beginPath();
+    cx.arc(ox, oy, s * 0.11, 0, Math.PI * 2);
+    cx.fillStyle = '#fff';
+    cx.fill();
+    cx.beginPath();
+    cx.arc(ox + dx * s * 0.04, oy + dy * s * 0.04, s * 0.055, 0, Math.PI * 2);
+    cx.fillStyle = '#131A2E';
+    cx.fill();
+  }
 }
 </script>
 <script>
@@ -4042,6 +5090,7 @@ document.addEventListener('keydown', e => {
     else if (k === 'Enter' && t.id === 'ob-name') { e.preventDefault(); const b = $('#onboard .ob-foot .btn-primary'); if (b) b.click(); }
     return;
   }
+  if (SN.on) { snKey(e); return; }
   if (!SES) return;
   if (k === 'Tab') { trapFocus(e, $('#session')); return; }
   if (e.altKey || e.ctrlKey || e.metaKey) return;
