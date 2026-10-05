@@ -934,6 +934,7 @@ body.ses-open { overflow: hidden; }
   position: fixed; left: 50%; bottom: calc(var(--nav-h) + 22px + env(safe-area-inset-bottom, 0px)); z-index: 90;
   transform: translateX(-50%); max-width: calc(100% - 32px); padding: 12px 18px; border-radius: 16px;
   background: var(--ink); color: var(--paper); font-weight: 800; box-shadow: var(--shade); animation: rise .25s ease both; text-align: center;
+  pointer-events: none;   /* liegt am Desktop über „Weiter“ – darf keinen Klick schlucken */
 }
 @media (min-width: 900px) { .toast { bottom: 28px; } }
 .confetti { position: fixed; inset: 0; width: 100%; height: 100%; z-index: 95; pointer-events: none; }
