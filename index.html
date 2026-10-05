@@ -3450,7 +3450,8 @@ function renderChoice(s) {
   if (t === 'gapc') {
     const cap = /^[A-Z]/.test(w.gap.word);
     const want = canon(w.gap.word);
-    const ds = distract(w, w.gap.inf ? 40 : 10, pool, 'en').filter(o => /^[a-z' -]{2,22}$/.test(o.k)).map(o => ({ x: gapForm(o, w.gap), w: o })).filter(o => o.x && o.x !== want).slice(0, 3);
+    // mit -s passen nur wenige Wörter als Ablenker (Buchform oder Verb) – darum viele Kandidaten ziehen
+    const ds = distract(w, w.gap.inf ? 150 : 10, pool, 'en').filter(o => /^[a-z' -]{2,22}$/.test(o.k)).map(o => ({ x: gapForm(o, w.gap), w: o })).filter(o => o.x && o.x !== want).slice(0, 3);
     if (ds.length >= 2) opts = [{ x: w.gap.word, w }, ...ds.map(o => ({ x: cap ? o.x[0].toUpperCase() + o.x.slice(1) : o.x, w: o.w }))];
     else t = 'mcDe';
   }
