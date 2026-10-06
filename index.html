@@ -1004,8 +1004,8 @@ body.ses-open { overflow: hidden; }
 .fox .fx-line { fill: none; stroke: #1B1826; stroke-width: 4.2; stroke-linecap: round; stroke-linejoin: round; }
 .fox .fx-mouth-open { fill: #8C2238; stroke: #1B1826; stroke-width: 3; stroke-linejoin: round; }
 .fox .fx-blush { fill: #FF8C9E; opacity: .5; }
-.fox .fx-scarf { fill: #2A5BD7; }
-.fox .fx-scarf-2 { fill: #E5484D; }
+.fox .fx-scarf { fill: var(--sc1, #2A5BD7); }
+.fox .fx-scarf-2 { fill: var(--sc2, #E5484D); }
 .fox .m-happy, .fox .m-open, .fox .m-sad, .fox .m-o, .fox .m-brows { display: none; }
 .fox.fox-happy .m-idle-eyes, .fox.fox-happy .m-smile { display: none; }
 .fox.fox-happy .m-happy, .fox.fox-happy .m-open { display: inline; }
@@ -1152,6 +1152,105 @@ body.ses-open { overflow: hidden; }
 @media (pointer: fine) and (min-width: 900px) { .sn-pad { opacity: .75; } }
 @keyframes sn-shake { 0%, 100% { transform: translateX(0); } 25% { transform: translateX(-6px); } 75% { transform: translateX(6px); } }
 
+/* ---------- Minispiele & Fuchsbau (spiele.js, fuchsbau.js) ---------- */
+.tal-games { display: grid; gap: 16px; margin: 16px 0; }
+@media (min-width: 1000px) { .tal-games { grid-template-columns: repeat(3, minmax(0, 1fr)); } }
+.tal-games .card + .card { margin-top: 0; }
+.tal-game-art .wa-ok { fill: var(--good); }
+.tal-game-art .wa-near { fill: var(--gold); }
+.tal-game-art .wa-no { fill: var(--rule-strong); }
+.tal-game-art .wa-ch { font: 600 11px var(--f-display); fill: var(--ink); text-anchor: middle; }
+.tal-game-art .ja-ground { stroke: var(--good); stroke-width: 3; }
+.tal-game-art .ja-arc { fill: none; stroke: var(--ink-3); stroke-width: 1.4; stroke-dasharray: 3 3; }
+.tal-game-art .ja-stone { fill: var(--ink-3); }
+.tal-game-art .ja-star { fill: var(--gold); }
+.tal-bau { display: flex; flex-direction: column; gap: 10px; }
+.tal-bau .btn { margin-top: auto; }
+.tal-bau-art .bau-room { display: block; width: 100%; height: auto; border-radius: 14px; }
+
+/* Bau: Wand, Boden, Fenster – Möbel und Fitz bringen ihre Farben mit */
+.bau-room .bau-wall { fill: var(--near-soft); }
+.bau-room .bau-wall-2 { fill: var(--fox-soft); }
+.bau-room .bau-floor { fill: color-mix(in srgb, var(--fox) 30%, var(--fox-soft)); }
+.bau-room .bau-edge { stroke: var(--fox-deep); stroke-width: 2; opacity: .35; }
+.bau-room .bau-sky { fill: var(--sky-soft); }
+.bau-room .bau-sun { fill: var(--gold); }
+.bau-room .bau-frame { stroke: #8A5A34; stroke-width: 4; }
+.bau-hero { display: grid; gap: 12px; }
+.bau-hero .bau-room { display: block; width: 100%; max-width: 640px; height: auto; margin: 0 auto; border-radius: 16px; }
+.bau-hero .tal-bar { margin: 0; }
+.bau-sum { display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 6px 14px; font-weight: 800; color: var(--ink-2); }
+.bau-sum > span:first-child { display: inline-flex; align-items: center; gap: 6px; }
+.bau-sum .ic { width: 22px; height: 22px; color: var(--gold); }
+.bau-sum b { font-family: var(--f-display); font-weight: 600; font-size: 24px; color: var(--ink); }
+.bau-sub { margin: 0; }
+.bau-grid { list-style: none; margin: 12px 0 0; padding: 0; display: grid; grid-template-columns: repeat(auto-fill, minmax(min(100%, 136px), 1fr)); gap: 10px; }
+.bau-item { display: flex; flex-direction: column; gap: 8px; min-width: 0; padding: 10px; border-radius: 16px; border: 2px solid var(--rule); background: var(--card); text-align: center; }
+.bau-item.is-worn { border-color: var(--fox); }
+.bau-item > b { min-height: 2.4em; display: grid; place-items: center; font-weight: 800; font-size: 15px; line-height: 1.2; overflow-wrap: anywhere; }
+.bau-item .btn, .bau-has { margin-top: auto; }
+.bau-prev { height: 84px; display: grid; place-items: center; border-radius: 12px; background: var(--card-2); overflow: hidden; }
+.bau-item.is-own .bau-prev { background: var(--good-soft); }
+.bau-prev > svg { width: 100%; height: 66px; }
+.bau-prev > .fox { width: 72px; height: 72px; }
+.bau-prev.bau-ask { width: 150px; height: 110px; margin: 0 auto 10px; }
+.bau-prev.bau-ask > svg { height: 90px; }
+.bau-prev.bau-ask > .fox { width: 96px; height: 96px; }
+.bau-has { min-height: 42px; display: flex; align-items: center; justify-content: center; gap: 6px; font-weight: 800; font-size: 15px; color: var(--good); }
+.bau-has .ic { width: 20px; height: 20px; }
+
+/* Minispiel-Vollbild: Karte liegt über dem Spielbereich, Kopfzeile bleibt frei */
+.mg-main { position: relative; width: 100%; }
+.mg-play { display: flex; flex-direction: column; align-items: center; gap: 10px; width: 100%; }
+.mg-over { position: absolute; inset: -6px 0 auto; min-height: calc(100% + 6px); display: grid; justify-items: center; align-content: start; padding: 14px 0; border-radius: var(--r-md); background: color-mix(in srgb, var(--paper) 80%, transparent); }
+.mg-over[hidden] { display: none; }
+.mg-over .fox { width: 88px; height: 88px; }
+.mg-tal { margin-left: auto; display: flex; align-items: center; gap: 6px; font-family: var(--f-display); font-weight: 600; font-size: 20px; color: var(--ink); }
+.mg-tal .ic { width: 24px; height: 24px; color: var(--gold); }
+
+/* Wortknacker */
+.wk-hint { min-height: 60px; display: grid; justify-items: center; align-content: center; gap: 2px; text-align: center; outline: none; }
+.wk-hint small { font-weight: 700; }
+.wk-board { --n: 5; display: grid; gap: 6px; width: min(100%, calc(var(--n) * 54px)); }
+.wk-row { display: grid; grid-template-columns: repeat(var(--n), minmax(0, 1fr)); gap: 6px; }
+.wk-t { aspect-ratio: 1; display: grid; place-items: center; border-radius: 10px; border: 2px solid var(--rule); background: var(--card); color: var(--ink); font-family: var(--f-display); font-weight: 600; font-size: 26px; line-height: 1; }
+.wk-row.is-cur .wk-t { border-color: var(--rule-strong); }
+.wk-row.is-cur .wk-t.is-in { border-color: var(--ink-3); }
+.wk-t.is-ok { background: var(--good); border-color: var(--good); color: #fff; }
+.wk-t.is-near { background: var(--gold); border-color: var(--gold); color: #3A2A00; }
+.wk-t.is-no { background: var(--rule-strong); border-color: var(--rule-strong); color: var(--ink-2); }
+.wk-t.is-flip { animation: wk-flip .45s ease both; animation-delay: calc(var(--i) * 90ms); }
+.wk-row.is-shake { animation: sn-shake .35s ease; }
+.wk-msg { min-height: 22px; margin: 0; text-align: center; font-weight: 800; color: var(--ink-2); }
+.wk-keys { width: 100%; max-width: 500px; display: grid; gap: 7px; touch-action: manipulation; }
+.wk-krow { display: flex; justify-content: center; gap: 5px; }
+.wk-key {
+  flex: 1 1 0; min-width: 0; max-width: 44px; height: 50px; padding: 0; display: grid; place-items: center; border-radius: 10px;
+  border: 2px solid var(--rule); background: var(--card); color: var(--ink); box-shadow: 0 3px 0 var(--rule);
+  font-family: var(--f-display); font-weight: 600; font-size: 20px; -webkit-user-select: none; user-select: none;
+}
+.wk-key.wk-wide { flex-grow: 1.5; max-width: 66px; }
+.wk-key .ic { width: 22px; height: 22px; }
+.wk-key:active { transform: translateY(2px); box-shadow: 0 1px 0 var(--rule); }
+.wk-key.is-ok { background: var(--good); border-color: var(--good); color: #fff; box-shadow: 0 3px 0 var(--good-deep); }
+.wk-key.is-near { background: var(--gold); border-color: var(--gold); color: #3A2A00; box-shadow: 0 3px 0 var(--near); }
+.wk-key.is-no { background: var(--rule); border-color: var(--rule); color: var(--ink-3); box-shadow: none; }
+.wk-legend { display: flex; flex-wrap: wrap; justify-content: center; gap: 6px 14px; font-weight: 700; font-size: 14px; color: var(--ink-2); }
+.wk-legend > span { display: inline-flex; align-items: center; gap: 6px; }
+.wk-legend .wk-t { width: 28px; border-radius: 7px; font-size: 17px; }
+.wk-sol { font-size: 18px; }
+.wk-sol b { font-family: var(--f-display); font-weight: 600; font-size: 26px; color: var(--ink); }
+@media (max-height: 700px) { .wk-board { width: min(100%, calc(var(--n) * 44px)); } .wk-t { font-size: 21px; } .wk-key { height: 44px; } }
+@keyframes wk-flip { from { transform: rotateX(90deg); } to { transform: none; } }
+
+/* Fuchs-Sprung */
+.sn.mg-fj { max-width: 760px; }
+.fj-stage { position: relative; width: min(100%, calc((100vh - 290px) * 1.6)); width: min(100%, calc((100dvh - 290px) * 1.6)); min-width: 260px; aspect-ratio: 8 / 5; touch-action: manipulation; -webkit-user-select: none; user-select: none; }
+.fj-stage canvas { display: block; width: 100%; height: 100%; border-radius: var(--r-md); border: 2px solid var(--rule); box-sizing: border-box; }
+.fj-stage.is-hit { animation: sn-shake .35s ease; }
+.fj-jump { width: min(100%, 380px); min-height: 72px; font-size: 22px; touch-action: manipulation; -webkit-user-select: none; user-select: none; -webkit-touch-callout: none; }
+.fj-jump .ic { width: 28px; height: 28px; }
+
 @media (prefers-reduced-motion: reduce) {
   *, *::before, *::after { animation-duration: .001ms !important; animation-iteration-count: 1 !important; transition-duration: .001ms !important; scroll-behavior: auto !important; }
   .btn.is-auto::after { display: none; }
@@ -1161,6 +1260,8 @@ body.ses-open { overflow: hidden; }
   .zap-fx, .zap-card, .zap-bolt, .zap-rays { animation: none !important; }
   .zap-flash { display: none; }
   .spk-mic.is-on { animation: none !important; }
+  .wk-t.is-flip, .wk-row.is-shake, .fj-stage.is-hit { animation: none !important; }
+  .wk-key:active { transform: none; }
 }
 </style>
 
@@ -1181,6 +1282,7 @@ body.ses-open { overflow: hidden; }
     <section class="view" id="v-words" aria-label="Wörter" hidden></section>
     <section class="view" id="v-awards" aria-label="Erfolge" hidden></section>
     <section class="view" id="v-taler" aria-label="Fuchstaler" hidden></section>
+    <section class="view" id="v-bau" aria-label="Fuchsbau" hidden></section>
     <section class="view" id="v-parents" aria-label="Für Eltern" hidden></section>
     <section class="view" id="v-picker" aria-label="Seiten auswählen" hidden></section>
   </main>
@@ -1208,6 +1310,7 @@ body.ses-open { overflow: hidden; }
   </section>
 
   <section class="snake" id="snake" aria-label="Wort-Snake" hidden></section>
+  <section class="snake" id="mg" aria-label="Minispiel" hidden></section>
 
   <section class="onboard" id="onboard" aria-label="Willkommen" hidden></section>
 
@@ -1620,7 +1723,7 @@ const xpAt = L => 50 * L * (L - 1);
 function fresh() {
   return {
     v: 1, t0: Date.now(), onb: false, rs: 0,
-    set: { name: '', goal: 100, sfx: true, tts: true, spk: true, rate: 0.9, voice: '', m: 0, tal: true, tk: 60, td: 20, tm: 60 },
+    set: { name: '', goal: 100, sfx: true, tts: true, spk: true, rate: 0.9, voice: '', m: 0, tal: true, tk: 60, td: 20, tm: 60, hat: '', scarf: '' },
     w: {}, days: {}, asg: {}, cur: '', curM: 0, tests: [], bdg: {}, st: {},
     pair: { k: '', m: 0 }, req: { c: '', o: 0, n: 0, m: 0 }, red: [],
   };
@@ -2038,13 +2141,16 @@ const ICONS = {
   'arrow-up': '<path d="M12 19V5M5 12l7-7 7 7"/>',
   'arrow-down': '<path d="M12 5v14M19 12l-7 7-7-7"/>',
   'arrow-left': '<path d="M19 12H5M12 19l-7-7 7-7"/>',
+  'delete': '<path d="M21 4H8l-7 8 7 8h13a2 2 0 0 0 2-2V6a2 2 0 0 0-2-2zM18 9l-6 6M12 9l6 6"/>',
 };
 const icon = (n, cls = '') => `<svg class="ic${cls ? ' ' + cls : ''}" viewBox="0 0 24 24" aria-hidden="true" focusable="false">${ICONS[n] || ''}</svg>`;
 
 // ---------- Fitz, der Fuchs ----------
-// Stimmungen: '' (freundlich), happy, sad, wow – umgeschaltet per CSS-Klasse
-function fox(mood = '', cls = '') {
-  return `<svg class="fox${mood ? ' fox-' + mood : ''}${cls ? ' ' + cls : ''}" viewBox="0 0 120 120" aria-hidden="true" focusable="false">`
+// Stimmungen: '' (freundlich), happy, sad, wow – umgeschaltet per CSS-Klasse.
+// Hut und Schal aus dem Fuchsbau (foxWear); look = Vorschau statt des Getragenen
+function fox(mood = '', cls = '', look) {
+  const wr = foxWear(look);
+  return `<svg class="fox${mood ? ' fox-' + mood : ''}${cls ? ' ' + cls : ''}" viewBox="0 0 120 120"${wr.st} aria-hidden="true" focusable="false">`
     + '<path class="fx-fur" d="M24 50 27 10Q29 5 33 9L56 30Z"/><path class="fx-fur" d="M96 50 93 10Q91 5 87 9L64 30Z"/>'
     + '<path class="fx-ear-in" d="M31 40 32 18 47 32Z"/><path class="fx-ear-in" d="M89 40 88 18 73 32Z"/>'
     + '<path class="fx-scarf" d="M72 104 77 119 88 115 84 100Z"/>'
@@ -2061,7 +2167,7 @@ function fox(mood = '', cls = '') {
     + '<path class="m-open fx-mouth-open" d="M50 82Q60 97 70 82Q60 86 50 82Z"/>'
     + '<path class="m-sad fx-line" d="M52 89Q60 82 68 89"/>'
     + '<ellipse class="m-o fx-mouth-open" cx="60" cy="87" rx="5" ry="6"/>'
-    + '</svg>';
+    + wr.hat + '</svg>';
 }
 
 // ---------- Vorlesen (Sprachausgabe des Browsers) ----------
@@ -2327,7 +2433,7 @@ const VIEWS = {};      // Name -> render(neu geöffnet?)
 let VIEW = 'home';
 
 function renderNav() {
-  const cur = VIEW === 'picker' ? 'home' : VIEW;
+  const cur = { picker: 'home', bau: 'taler' }[VIEW] || VIEW;
   const nav = NAV.filter(([v]) => v !== 'taler' || talOn());
   const n = talOn() ? talBalance() : 0;
   const badge = v => v === 'taler' && n ? `<em class="nav-n" aria-label="${plural(n, 'Taler', 'Taler')}">${n}</em>` : '';
@@ -4625,7 +4731,7 @@ CHG['set-spk'] = el => setSet('spk', el.checked);
 'use strict';
 
 // ======================= Konto =======================
-// Taler-Tageswerte in S.days: c verdient, cx XP-Topf zum nächsten Taler, sp für Snake ausgegeben,
+// Taler-Tageswerte in S.days: c verdient, cx XP-Topf zum nächsten Taler, sp für Spielrunden ausgegeben,
 // bz Blitz-Taler heute schon vergeben, fx „Ich hatte recht“. Eingelöst wird über das Protokoll S.red.
 const TAL_MIN = [0, 5, 10, 15, 20, 30];   // Ziffer in der Anfrage → Minuten
 const TAL_ASK = [2, 3, 4, 5];             // das Kind fragt 10/15/20/30 Min an
@@ -4643,6 +4749,14 @@ function talBalance() {
 // Was frei ist, wenn eine offene Anfrage schon Minuten reserviert
 const talFree = () => talBalance() - (S.req.c && S.req.o !== TAL_UNLOCK ? TAL_MIN[S.req.o] || 0 : 0);
 const talLocked = () => !!S.pair.k && !PAR.tal;
+// Spielrunden (Snake, Wortknacker, Fuchs-Sprung): warum gerade keine geht ('' = geht) und 1 Taler abbuchen
+const talPlayWhy = () => !talOn() || talFree() >= 1 ? '' : talBalance() ? 'Deine Taler sind für die Anfrage reserviert.' : 'Keine Taler mehr – lern ein bisschen, dann geht es weiter!';
+function talPay() {
+  if (!talOn()) return;
+  const r = todayRec();
+  r.sp = (r.sp || 0) + 1;
+  commit();
+}
 
 // XP füllen den Topf; ist die Tages- oder Kontogrenze erreicht, verfällt er
 function talEarn(n) {
@@ -4737,9 +4851,13 @@ VIEWS.taler = () => {
   const bal = talBalance(), r = S.days[dayKey(today())] || {}, k = talRate(), td = S.set.td || 20, tm = S.set.tm || 60;
   const got = r.c || 0, cx = r.cx || 0, full = got >= td || bal >= tm;
   const note = got >= td ? `Heute alle ${td} geschafft – super!` : bal >= tm ? 'Konto voll – lös erst welche ein!' : '';
-  const free = talFree();
-  const playWhy = free < 1 ? (bal ? 'Deine Taler sind für die Anfrage reserviert.' : 'Keine Taler mehr – lern ein bisschen, dann geht es weiter!') : '';
-  const rec = S.st.snake || 0;
+  const playWhy = talPlayWhy(), recOf = k => S.st[k] ? `<span class="kicker">Rekord ${fmtN(S.st[k])}</span>` : '';
+  const game = (art, h, kick, text, act) => `<div class="card tal-game">
+      <div class="tal-game-art" aria-hidden="true">${art}</div>
+      <div class="card-h"><h2>${h}</h2>${kick}</div>
+      <p class="muted">${text}</p>
+      <button class="btn btn-primary btn-block" type="button" data-act="${act}"${playWhy ? ` aria-disabled="true" data-why="${esc(playWhy)}"` : ''}>${icon('gamepad')}Spielen · 1 Taler</button></div>`;
+  const own = bauOwned();
   const recent = S.red.filter(x => !x.k).slice(-5).reverse()
     .map(x => `<li><span>${fmtDay(dayNum(new Date(x.t)))}, ${clockOf(x.t)}</span><b>${x.min} Min</b></li>`).join('');
 
@@ -4756,12 +4874,16 @@ VIEWS.taler = () => {
         ${note ? `<p class="tal-note">${note}</p>` : ''}
       </div>
     </div>
+    <div class="tal-games">
+      ${game(snArt(), 'Wort-Snake', recOf('snake'), 'Friss die Buchstaben der Reihe nach.', 'sn-open')}
+      ${game(wkArt(), 'Wortknacker', S.st.wk ? `<span class="kicker">${fmtN(S.st.wk)} geknackt</span>` : '', 'Errate das Wort in 6 Versuchen.', 'wk-open')}
+      ${game(fjArt(), 'Fuchs-Sprung', recOf('jump'), 'Spring und sammle Sterne.', 'fj-open')}
+    </div>
     <div class="tal-grid">
-      <div class="card tal-game">
-        <div class="tal-game-art" aria-hidden="true">${snArt()}</div>
-        <div class="card-h"><h2>Wort-Snake</h2>${rec ? `<span class="kicker">Rekord ${fmtN(rec)}</span>` : ''}</div>
-        <p class="muted">Friss die Buchstaben der Reihe nach.</p>
-        <button class="btn btn-primary btn-block" type="button" data-act="sn-open"${playWhy ? ` aria-disabled="true" data-why="${esc(playWhy)}"` : ''}>${icon('gamepad')}Spielen · 1 Taler</button>
+      <div class="card tal-bau">
+        <div class="card-h"><h2>Fuchsbau</h2><span class="kicker">${BAU.filter(x => own.has(x.id)).length} / ${BAU.length}</span></div>
+        <div class="tal-bau-art">${bauRoom(own)}</div>
+        <button class="btn btn-ghost btn-block" type="button" data-go="bau">${icon('sparkles')}Einrichten</button>
       </div>
       <div class="card tal-redeem">
         <div class="card-h"><h2>Bildschirmzeit</h2>${icon('smartphone')}</div>
@@ -4923,7 +5045,7 @@ function talParentHTML() {
   let fx = 0, c7 = 0;
   for (let i = 0; i < 7; i++) { const r = S.days[dayKey(t - i)] || {}; fx += r.fx || 0; c7 += r.c || 0; }
   const red7 = S.red.filter(x => !x.k && dayNum(new Date(x.t)) > t - 7);
-  const rows = S.red.slice(-10).reverse().map(x => `<tr><td>${fmtDay(dayNum(new Date(x.t)))}, ${clockOf(x.t)}</td><td>${x.k ? 'Einstellungen entsperrt' : `${x.min} Min`}</td></tr>`).join('');
+  const rows = S.red.slice(-10).reverse().map(x => `<tr><td>${fmtDay(dayNum(new Date(x.t)))}, ${clockOf(x.t)}</td><td>${x.k === 'b' ? `Fuchsbau: ${esc((BAU_BY[x.b] || {}).n || '?')} (${x.min} Taler)` : x.k ? 'Einstellungen entsperrt' : `${x.min} Min`}</td></tr>`).join('');
   const report = `<div class="card"><div class="card-h"><h2>Fuchstaler</h2><span class="kicker">letzte 7 Tage</span></div>
     <div class="kpis">
       <div class="kpi"><span>Kontostand</span><b>${talBalance()}</b><em>höchstens ${tm}</em></div>
@@ -5125,7 +5247,7 @@ function snOver(html) {
   if (f) f.focus({ preventScroll: true });
 }
 function snStartBtn(label) {
-  const why = talOn() && talFree() < 1 ? 'Keine Taler mehr – lern ein bisschen, dann geht es weiter!' : '';
+  const why = talPlayWhy();
   return `<button class="btn btn-primary" type="button" data-act="sn-start"${why ? ` aria-disabled="true" data-why="${esc(why)}"` : ''}>${icon('play', 'ic-fill')}${label}${talOn() ? ' · 1 Taler' : ''}</button>`;
 }
 function snIntro() {
@@ -5140,7 +5262,7 @@ function snIntro() {
 
 ACT['sn-start'] = el => {
   if (whyToast(el)) return;
-  if (talOn()) { const r = todayRec(); r.sp = (r.sp || 0) + 1; commit(); }
+  talPay();
   if (SN.phase === 'end') snReset();
   snOver('');
   SN.phase = 'play';
@@ -5374,6 +5496,737 @@ function snDraw() {
 }
 </script>
 <script>
+/* Wortfuchs – Taler-Minispiele: Wortknacker (englisches Wort in 6 Versuchen erraten) und
+   Fuchs-Sprung (Fitz springt über Hindernisse). Eine Runde kostet 1 Taler (talPay).
+   Beide laufen im Vollbild #mg wie Wort-Snake. Baut auf kern.js, ui.js, ueben.js und taler.js auf. */
+'use strict';
+
+// ======================= Gemeinsam =======================
+// on = 'wk' | 'fj' | '', phase = intro | play | pause | end
+const MG = { on: '', phase: '', tm: 0 };
+
+function mgOpen(kind, label, hud, body) {
+  MG.on = kind;
+  MG.phase = 'intro';
+  const root = $('#mg');
+  root.setAttribute('aria-label', label);
+  root.innerHTML = `<div class="sn mg-${kind}">
+    <div class="sn-top"><button class="icon-btn" type="button" data-act="mg-quit" aria-label="${label} beenden">${icon('x')}</button>${hud}</div>
+    <div class="mg-main"><div class="mg-play" id="mg-play">${body}</div><div class="mg-over" id="mg-over" hidden></div></div></div>`;
+  root.hidden = false;
+  document.body.classList.add('ses-open');
+  for (const s of BEHIND) $(s).inert = true;
+}
+
+// Karte über dem Spielfeld (Start, Pause, Ende); dahinter ist alles gesperrt
+function mgOver(html) {
+  const o = $('#mg-over');
+  if (!o) return;
+  o.innerHTML = html ? `<div class="sn-card">${html}</div>` : '';
+  o.hidden = !html;
+  $('#mg-play').inert = !!html;
+  const f = $('#mg-over .btn-primary');
+  if (f) f.focus({ preventScroll: true });
+}
+function mgStartBtn(act, label) {
+  const why = talPlayWhy();
+  return `<button class="btn btn-primary" type="button" data-act="${act}"${why ? ` aria-disabled="true" data-why="${esc(why)}"` : ''}>${icon('play', 'ic-fill')}${label}${talOn() ? ' · 1 Taler' : ''}</button>`;
+}
+const mgTal = () => talOn() ? `Du hast ${plural(talBalance(), 'Taler', 'Taler')}` : '';
+const mgDone = () => '<button class="btn btn-ghost" type="button" data-act="mg-close">Fertig</button>';
+
+async function mgQuit() {
+  if (MG.on === 'fj' && (MG.phase === 'play' || MG.phase === 'pause')) {
+    fjPause(true);
+    const yes = await ask({ title: 'Runde beenden?', text: 'Der Taler für diese Runde ist schon ausgegeben.', yes: 'Beenden', no: 'Weiterspielen', art: fox('sad'), stay: true });
+    if (!yes) { fjPause(false); return; }
+    fjEnd();
+  } else if (MG.on === 'wk' && MG.phase === 'play') {
+    const yes = await ask({ title: 'Wort aufgeben?', text: 'Der Taler für dieses Wort ist schon ausgegeben.', yes: 'Aufgeben', no: 'Weiterraten', art: fox('sad'), stay: true });
+    if (!yes) return;
+  }
+  mgClose();
+}
+ACT['mg-quit'] = () => mgQuit();
+ACT['mg-close'] = () => mgClose();
+
+function mgClose() {
+  if (!MG.on) return;
+  cancelAnimationFrame(FJ.raf);
+  clearTimeout(MG.tm);
+  Object.assign(MG, { on: '', phase: '' });
+  Object.assign(FJ, { cv: null, cx: null });
+  TTS.stop();
+  const root = $('#mg');
+  root.hidden = true;
+  root.innerHTML = '';
+  for (const s of BEHIND) $(s).inert = false;
+  if ($('#onboard').hidden) document.body.classList.remove('ses-open');
+  refresh();
+}
+
+function mgKey(e) {
+  const k = e.key;
+  if (k === 'Tab') { trapFocus(e, $('#mg-over').hidden ? $('#mg') : $('#mg-over')); return; }
+  if (e.altKey || e.ctrlKey || e.metaKey) return;
+  if (k === 'Escape') { e.preventDefault(); mgQuit(); return; }
+  if (MG.on === 'wk') wkKey(e); else fjKey(e);
+}
+
+// ======================= Wortknacker =======================
+const WK_TRIES = 6, WK_ROWS = ['qwertzuiop', 'asdfghjkl', 'yxcvbnm'], WK_RANK = { no: 1, near: 2, ok: 3 };
+const WK = { word: null, w: '', rows: [], cur: '', keys: {}, seen: [] };
+
+// Kleines Bild für die Karte in der Taler-Ansicht
+function wkArt() {
+  return `<svg viewBox="0 0 80 40">${[['w', 'ok'], ['o', 'no'], ['r', 'near'], ['d', 'ok']]
+    .map(([ch, c], i) => `<rect x="${3 + i * 19}" y="11" width="17" height="17" rx="4" class="wa-${c}"/><text x="${11.5 + i * 19}" y="23.5" class="wa-ch">${ch}</text>`).join('')}</svg>`;
+}
+
+// Wörter mit 4–7 Buchstaben, am liebsten schon gelernte; die letzten 30 nicht nochmal
+function wkPick() {
+  const ok = w => /^[a-z]{4,7}$/.test(w.plain);
+  let list = knownWords(sesPool()).filter(ok);
+  if (list.length < 6) list = sesPool().filter(ok);
+  if (list.length < 6) list = WORDS.filter(ok);
+  const open = list.filter(w => !WK.seen.includes(w.id));
+  const w = pickOne(open.length ? open : list);
+  WK.seen = [...WK.seen, w.id].slice(-30);
+  return w;
+}
+
+// Bewertung wie bei Wordle: erst die Treffer, dann gelb nur so oft, wie der Buchstabe noch übrig ist
+function wkScore(g, w) {
+  const res = [...g].map(() => 'no'), left = {};
+  for (let i = 0; i < w.length; i++) if (g[i] === w[i]) res[i] = 'ok'; else left[w[i]] = (left[w[i]] || 0) + 1;
+  for (let i = 0; i < w.length; i++) if (res[i] !== 'ok' && left[g[i]]) { res[i] = 'near'; left[g[i]]--; }
+  return res;
+}
+
+ACT['wk-open'] = el => {
+  if (whyToast(el)) return;
+  Object.assign(WK, { word: null, w: '', rows: [], cur: '', keys: {} });
+  const key = (k, inner, lab) => `<button class="wk-key${k.length > 1 ? ' wk-wide' : ''}" type="button" tabindex="-1" data-act="wk-k" data-k="${k}"${lab ? ` aria-label="${lab}"` : ''}>${inner}</button>`;
+  const rows = WK_ROWS.map((r, i) => `<div class="wk-krow">${i === 2 ? key('enter', icon('check'), 'Prüfen') : ''}${[...r].map(c => key(c, c)).join('')}${i === 2 ? key('back', icon('delete'), 'Löschen') : ''}</div>`);
+  mgOpen('wk', 'Wortknacker', `<div class="mg-tal" id="wk-tal">${talOn() ? `${icon('coin')}<span>${talBalance()}</span>` : ''}</div>`,
+    `<div class="wk-hint" id="wk-hint" tabindex="-1"></div>
+    <div class="wk-board" id="wk-board" role="group" aria-label="Deine Versuche"></div>
+    <p class="wk-msg" id="wk-msg" aria-live="polite"></p>
+    <div class="wk-keys" id="wk-keys" lang="en" aria-label="Buchstaben">${rows.join('')}</div>`);
+  wkDraw();
+  wkIntro();
+};
+
+function wkIntro() {
+  const tile = (c, ch) => `<span class="wk-t is-${c}">${ch}</span>`;
+  mgOver(`<h2>Wortknacker</h2>
+    <p>Errate das englische Wort in <b>6 Versuchen</b>.</p>
+    <div class="wk-legend"><span>${tile('ok', 'a')} richtig</span><span>${tile('near', 'b')} anderer Platz</span><span>${tile('no', 'c')} kommt nicht vor</span></div>
+    ${mgStartBtn('wk-start', 'Start')}
+    <small class="muted">${S.st.wk ? `Schon ${fmtN(S.st.wk)} geknackt · ` : ''}${mgTal()}</small>`);
+}
+
+ACT['wk-start'] = el => {
+  if (whyToast(el)) return;
+  talPay();
+  statInc('wkg');
+  commit();
+  const word = wkPick();
+  Object.assign(WK, { word, w: word.plain, rows: [], cur: '', keys: {} });
+  MG.phase = 'play';
+  mgOver('');
+  Sfx.play('start');
+  wkDraw();
+  wkMsg('');
+  $('#wk-hint').focus({ preventScroll: true });
+};
+
+function wkDraw() {
+  const n = WK.w.length || 5, cur = MG.phase === 'play' ? WK.rows.length : -1;
+  const tal = $('#wk-tal span');
+  if (tal) tal.textContent = talBalance();
+  // Hinweis: deutsches Wort, Anzahl der Buchstaben; ab dem 3. Versuch darf man es anhören
+  const h = $('#wk-hint');
+  h.innerHTML = WK.word ? `<div class="sn-de"><span>${esc(deShort(WK.word))}</span>${TTS.ok && S.set.tts && WK.rows.length >= 3 ? `<button class="icon-btn sn-say" type="button" data-act="wk-say" aria-label="Wort anhören">${icon('volume')}</button>` : ''}</div>
+    <small class="muted">${n} Buchstaben${TTS.ok && S.set.tts && WK.rows.length < 3 && MG.phase === 'play' ? ' · ab Versuch 3 zum Anhören' : ''}</small>` : '';
+  const board = $('#wk-board');
+  board.style.setProperty('--n', n);
+  let html = '';
+  for (let r = 0; r < WK_TRIES; r++) {
+    const g = WK.rows[r];
+    let cells = '', lab = '';
+    for (let i = 0; i < n; i++) {
+      if (g) cells += `<span class="wk-t is-${g.res[i]}${r === WK.rows.length - 1 && !REDUCED ? ' is-flip' : ''}" style="--i:${i}">${g.g[i]}</span>`;
+      else if (r === cur) cells += `<span class="wk-t${WK.cur[i] ? ' is-in' : ''}">${WK.cur[i] || ''}</span>`;
+      else cells += '<span class="wk-t"></span>';
+    }
+    if (g) lab = `${g.g}: ${wkSum(g.res)}`;
+    else if (r === cur) lab = WK.cur ? `Deine Eingabe: ${[...WK.cur].join(' ')}` : 'Deine Eingabe: noch leer';
+    html += `<div class="wk-row${r === cur ? ' is-cur' : ''}" role="img" lang="en" aria-label="${lab || `Versuch ${r + 1}: leer`}">${cells}</div>`;
+  }
+  board.innerHTML = html;
+  for (const b of $$('#wk-keys [data-k]')) {
+    const s = WK.keys[b.dataset.k];
+    b.classList.remove('is-ok', 'is-near', 'is-no');
+    if (s) b.classList.add('is-' + s);
+    if (b.dataset.k.length === 1) b.setAttribute('aria-label', b.dataset.k + (s === 'ok' ? ', richtig' : s === 'near' ? ', anderer Platz' : s === 'no' ? ', kommt nicht vor' : ''));
+  }
+}
+const wkSum = res => {
+  const ok = res.filter(x => x === 'ok').length, near = res.filter(x => x === 'near').length;
+  return `${ok} richtig, ${near} an anderer Stelle`;
+};
+const wkMsg = t => { const m = $('#wk-msg'); if (m) m.textContent = t; };
+ACT['wk-say'] = () => sayWord(WK.word);
+
+function wkType(ch) {
+  if (MG.phase !== 'play' || WK.cur.length >= WK.w.length) return;
+  WK.cur += ch;
+  wkMsg('');
+  wkDraw();
+}
+function wkBack() {
+  if (MG.phase !== 'play' || !WK.cur) return;
+  WK.cur = WK.cur.slice(0, -1);
+  wkDraw();
+}
+
+function wkEnter() {
+  if (MG.phase !== 'play') return;
+  const n = WK.w.length;
+  if (WK.cur.length < n) {
+    wkMsg(`Noch ${plural(n - WK.cur.length, 'Buchstabe', 'Buchstaben')}`);
+    const row = $('#wk-board .is-cur');
+    if (row && !REDUCED) { row.classList.remove('is-shake'); void row.offsetWidth; row.classList.add('is-shake'); }
+    Sfx.play('tap');
+    return;
+  }
+  const g = WK.cur, res = wkScore(g, WK.w);
+  WK.rows.push({ g, res });
+  WK.cur = '';
+  [...g].forEach((ch, i) => { if ((WK_RANK[res[i]] || 0) > (WK_RANK[WK.keys[ch]] || 0)) WK.keys[ch] = res[i]; });
+  const win = res.every(x => x === 'ok');
+  if (win || WK.rows.length >= WK_TRIES) MG.phase = 'end';
+  wkDraw();
+  wkMsg(win ? 'Geknackt!' : wkSum(res));
+  if (MG.phase !== 'end') { Sfx.play(res.includes('ok') ? 'near' : 'tap'); return; }
+  Sfx.play(win ? 'win' : 'bad');
+  MG.tm = setTimeout(() => wkEnd(win), REDUCED ? 400 : 1100);
+}
+
+function wkEnd(win) {
+  if (MG.on !== 'wk') return;
+  if (win) { statInc('wk'); commit(); confetti(70); }
+  sayWord(WK.word);
+  const n = WK.rows.length;
+  mgOver(`${fox(win ? 'happy' : 'sad')}
+    <h2>${win ? 'Geknackt!' : 'Knapp daneben'}</h2>
+    <p class="wk-sol"><b lang="en">${esc(WK.w)}</b> = ${esc(deShort(WK.word))}</p>
+    <p>${win ? (n === 1 ? 'Beim ersten Versuch – Wahnsinn!' : `in ${n} Versuchen`) : 'Beim nächsten Wort klappt es!'}</p>
+    ${win ? `<p class="sn-rec">Schon ${fmtN(S.st.wk)} ${S.st.wk === 1 ? 'Wort' : 'Wörter'} geknackt</p>` : ''}
+    <div class="sn-btns">${mgStartBtn('wk-start', 'Nächstes Wort')}${mgDone()}</div>
+    <small class="muted">${mgTal()}</small>`);
+}
+
+// Bildschirm-Tastatur: tabindex -1, darum landet der Fokus selten dort; Enter prüft trotzdem
+ACT['wk-k'] = el => {
+  const k = el.dataset.k;
+  if (k === 'enter') wkEnter(); else if (k === 'back') wkBack(); else wkType(k);
+};
+function wkKey(e) {
+  if (MG.phase !== 'play') return;
+  const k = e.key, onBtn = e.target.closest && e.target.closest('button');
+  if (/^[a-zA-Z]$/.test(k)) { e.preventDefault(); wkType(k.toLowerCase()); return; }
+  if (k === 'Backspace') { e.preventDefault(); wkBack(); return; }
+  if ((k === 'Enter' || k === ' ') && onBtn && !onBtn.classList.contains('wk-key')) return;
+  if (k === 'Enter') { e.preventDefault(); if (!e.repeat) wkEnter(); }
+  else if (k === ' ') e.preventDefault();
+}
+
+// ======================= Fuchs-Sprung =======================
+// Welt in Bildhöhen: Höhe 1, Breite 1,6, Boden bei 0,84. h = Höhe von Fitz über dem Boden.
+const FJ_TIME = 90, FJ_HEARTS = 3, FJ_WW = 1.6, FJ_GY = 0.84, FJ_X = 0.26, FJ_SIZE = 0.2;
+const FJ_GRAV = 3.4, FJ_JUMP = 1.3, FJ_JUMP2 = 1.1;
+const FJ_OBS = [
+  { id: 'stone', w: 0.11, h: 0.075 },
+  { id: 'log', w: 0.17, h: 0.07 },
+  { id: 'bush', w: 0.12, h: 0.1 },
+  { id: 'stump', w: 0.09, h: 0.19 },
+];
+const FJ = { raf: 0, cv: null, cx: null, col: null, img: null, last: 0 };
+
+// Kleines Bild für die Karte in der Taler-Ansicht: Fitz im Sprung über einen Stein
+function fjArt() {
+  return `<svg viewBox="0 0 80 40"><path d="M0 35H80" class="ja-ground"/><path d="M14 33Q30 4 52 22" class="ja-arc"/>
+    <path d="M50 35Q50 26 57 26Q64 26 64 35Z" class="ja-stone"/><path d="m24 9 1.4 2.9 3.1.4-2.3 2.2.6 3.1-2.8-1.5-2.8 1.5.6-3.1-2.3-2.2 3.1-.4z" class="ja-star"/>
+    ${fox('', '', {}).replace('<svg ', '<svg x="28" y="2" width="22" height="22" ')}</svg>`;
+}
+
+ACT['fj-open'] = el => {
+  if (whyToast(el)) return;
+  mgOpen('fj', 'Fuchs-Sprung', `<div class="sn-hearts" id="fj-hearts" aria-label="Herzen"></div><div class="sn-score" id="fj-score" aria-label="Punkte">0</div><div class="sn-time" id="fj-time">${fmtTime(FJ_TIME)}</div>`,
+    `<div class="fj-stage" id="fj-stage"><canvas id="fj-cv" role="img" aria-label="Spielfeld: Fitz rennt und springt über Hindernisse"></canvas></div>
+    <button class="btn btn-primary fj-jump" id="fj-jump" type="button" tabindex="-1">${icon('arrow-up')}Springen</button>`);
+  FJ.cv = $('#fj-cv');
+  FJ.cx = FJ.cv.getContext('2d');
+  fjColors();
+  fjFox();
+  fjReset();
+  fjFit();
+  fjIntro();
+};
+
+function fjColors() {
+  const cs = getComputedStyle(document.documentElement), v = n => cs.getPropertyValue(n).trim();
+  FJ.col = { sky: v('--sky-soft'), cloud: v('--card'), hill: v('--good-soft'), grass: v('--good'), bush: v('--good-deep'),
+    dirt: v('--near-soft'), peb: v('--near'), stone: v('--ink-3'), star: v('--gold'), star2: v('--near-deep'), sun: v('--gold') };
+}
+
+// Fitz als Bild: dieselbe Zeichnung wie fox(), mit eingebauten Farben (CSS gilt in <img> nicht)
+function fjFox() {
+  const sc = foxWear().sc || ['#2A5BD7', '#E5484D'];
+  const css = `.fx-fur{fill:#F47A2E}.fx-ear-in{fill:#4A2417}.fx-mask{fill:#FFF6EE}.fx-dark{fill:#1B1826}.fx-glint{fill:#fff}`
+    + `.fx-line{fill:none;stroke:#1B1826;stroke-width:4.2;stroke-linecap:round;stroke-linejoin:round}.fx-blush{fill:#FF8C9E;opacity:.5}`
+    + `.fx-scarf{fill:${sc[0]}}.fx-scarf-2{fill:${sc[1]}}.m-happy,.m-open,.m-sad,.m-o,.m-brows{display:none}`;
+  const svg = fox().replace(/ style="[^"]*"/, '').replace('<svg ', '<svg xmlns="http://www.w3.org/2000/svg" width="120" height="120" ')
+    .replace('focusable="false">', `focusable="false"><style>${css}</style>`);
+  FJ.img = new Image();
+  FJ.img.onload = () => fjDraw();
+  FJ.img.src = 'data:image/svg+xml;charset=utf-8,' + encodeURIComponent(svg);
+}
+
+function fjReset() {
+  Object.assign(FJ, { t: 0, left: FJ_TIME, dist: 0, h: 0, vy: 0, jumps: 0, buf: 0, inv: 0, hearts: FJ_HEARTS,
+    got: 0, score: 0, obs: [], stars: [], next: 1.6, last: 0, hud: '' });
+}
+
+function fjIntro() {
+  fjHud();
+  fjDraw();
+  mgOver(`<h2>Fuchs-Sprung</h2>
+    <p><b>Spring</b> über Steine und Büsche, sammle Sterne!</p>
+    <p class="muted">Tippen oder Leertaste. Zweimal = Doppelsprung.</p>
+    ${mgStartBtn('fj-start', 'Start')}
+    <small class="muted">${S.st.jump ? `Rekord: ${fmtN(S.st.jump)} · ` : ''}${mgTal()}</small>`);
+}
+
+ACT['fj-start'] = el => {
+  if (whyToast(el)) return;
+  talPay();
+  if (MG.phase === 'end') fjReset();
+  mgOver('');
+  MG.phase = 'play';
+  FJ.last = 0;
+  Sfx.play('start');
+  fjHud();
+  FJ.raf = requestAnimationFrame(fjLoop);
+};
+
+function fjLoop(t) {
+  if (MG.phase !== 'play' || MG.on !== 'fj') return;
+  const dt = FJ.last ? Math.min(0.05, (t - FJ.last) / 1000) : 0;
+  FJ.last = t;
+  fjStep(dt);
+  if (MG.phase !== 'play') return;
+  fjDraw();
+  fjHud();
+  FJ.raf = requestAnimationFrame(fjLoop);
+}
+
+function fjJump() {
+  if (MG.phase !== 'play' || MG.on !== 'fj') return;
+  if (FJ.h <= 0 && FJ.vy <= 0) { FJ.vy = FJ_JUMP; FJ.jumps = 1; Sfx.play('tap'); }
+  else if (FJ.jumps < 2) { FJ.vy = FJ_JUMP2; FJ.jumps = 2; Sfx.play('tap'); }
+  else FJ.buf = 0.12;   // kurz vor der Landung gedrückt: springt gleich wieder
+}
+
+function fjStep(dt) {
+  FJ.t += dt;
+  FJ.left -= dt;
+  const dx = (0.75 + 0.55 * Math.min(1, FJ.t / 70)) * dt;
+  FJ.dist += dx;
+  // Fitz
+  FJ.vy -= FJ_GRAV * dt;
+  FJ.h += FJ.vy * dt;
+  if (FJ.buf > 0) FJ.buf -= dt;
+  if (FJ.h <= 0) {
+    FJ.h = 0;
+    FJ.vy = 0;
+    FJ.jumps = 0;
+    if (FJ.buf > 0) { FJ.buf = 0; fjJump(); }
+  }
+  // Welt rückt nach links
+  for (const o of FJ.obs) o.x -= dx;
+  for (const s of FJ.stars) s.x -= dx;
+  FJ.obs = FJ.obs.filter(o => o.x > -0.3);
+  FJ.stars = FJ.stars.filter(s => s.x > -0.1 && !s.got);
+  FJ.next -= dt;
+  if (FJ.next <= 0) fjSpawn();
+  // Treffer: Hitbox etwas kleiner als das Bild, damit knappe Sprünge zählen
+  const fl = FJ_X - 0.05, fr = FJ_X + 0.05, fb = FJ.h, ft = FJ.h + 0.15;
+  if (FJ.inv > 0) FJ.inv -= dt;
+  else for (const o of FJ.obs) {
+    if (o.hit || o.x + o.w / 2 - 0.012 < fl || o.x - o.w / 2 + 0.012 > fr || fb > o.h - 0.012) continue;
+    o.hit = true;
+    fjHurt();
+    break;
+  }
+  for (const s of FJ.stars) {
+    if (s.got || s.x + 0.035 < fl || s.x - 0.035 > fr || s.y + 0.035 < fb || s.y - 0.035 > ft) continue;
+    s.got = true;
+    FJ.got++;
+    Sfx.play('pair');
+  }
+  FJ.score = Math.floor(FJ.dist * 10) + FJ.got * 10;
+  if (MG.phase === 'play' && FJ.left <= 0) fjEnd();
+}
+
+// Hindernis + manchmal Sterne: im Bogen darüber oder als Reihe dahinter
+function fjSpawn() {
+  const kinds = FJ.t > 25 ? FJ_OBS : FJ_OBS.filter(o => o.id !== 'stump');
+  const o = { ...pickOne(kinds), x: FJ_WW + 0.15 };
+  FJ.obs.push(o);
+  const r = Math.random();
+  if (r < 0.45) for (const i of [-1, 0, 1]) FJ.stars.push({ x: o.x + i * 0.11, y: o.h + (i ? 0.1 : 0.16) });
+  else if (r < 0.75) for (const i of [0, 1, 2]) FJ.stars.push({ x: o.x + 0.32 + i * 0.1, y: 0.05 });
+  FJ.next = FJ.t < 40 ? 1 + Math.random() * 0.9 : 0.9 + Math.random() * 0.6;
+}
+
+function fjHurt() {
+  FJ.hearts--;
+  FJ.inv = 1.2;
+  Sfx.play('bad');
+  const st = $('#fj-stage');
+  if (st && !REDUCED) { st.classList.remove('is-hit'); void st.offsetWidth; st.classList.add('is-hit'); }
+  if (FJ.hearts <= 0) fjEnd();
+}
+
+function fjHud() {
+  const s = `${FJ.hearts}|${FJ.score}|${Math.ceil(FJ.left)}`;
+  if (s === FJ.hud || !$('#fj-hearts')) return;
+  FJ.hud = s;
+  $('#fj-hearts').innerHTML = [0, 1, 2].map(i => `<span class="${i < FJ.hearts ? 'on' : ''}">${icon('heart', 'ic-fill')}</span>`).join('');
+  $('#fj-hearts').setAttribute('aria-label', plural(FJ.hearts, 'Herz', 'Herzen'));
+  $('#fj-score').textContent = fmtN(FJ.score);
+  const sec = Math.max(0, Math.ceil(FJ.left));
+  $('#fj-time').textContent = fmtTime(sec);
+  $('#fj-time').classList.toggle('is-low', sec <= 10);
+}
+
+function fjEnd() {
+  if (MG.phase === 'end') return;
+  cancelAnimationFrame(FJ.raf);
+  MG.phase = 'end';
+  const prev = S.st.jump || 0, rec = FJ.score > prev;
+  statMax('jump', FJ.score);
+  statInc('jpg');
+  commit();
+  fjDraw();
+  fjHud();
+  Sfx.play(rec && FJ.score ? 'win' : 'level');
+  if (rec && prev) confetti(60);
+  mgOver(`<h2>${fmtN(FJ.score)} Punkte</h2>
+    <p>${FJ.left <= 0 ? 'Zeit um – geschafft!' : 'Keine Herzen mehr.'} ${plural(FJ.got, 'Stern', 'Sterne')} gesammelt.</p>
+    <p class="sn-rec">${rec && FJ.score ? (prev ? `Neuer Rekord – vorher ${fmtN(prev)}!` : 'Dein erster Rekord!') : `Rekord: ${fmtN(prev)}`}</p>
+    <div class="sn-btns">${mgStartBtn('fj-start', 'Nochmal')}${mgDone()}</div>
+    <small class="muted">${mgTal()}</small>`);
+}
+
+function fjPause(on) {
+  if (MG.on !== 'fj') return;
+  if (on && MG.phase === 'play') {
+    cancelAnimationFrame(FJ.raf);
+    MG.phase = 'pause';
+    mgOver(`<h2>Pause</h2><button class="btn btn-primary" type="button" data-act="fj-go">${icon('play', 'ic-fill')}Weiter</button>`);
+  } else if (!on && MG.phase === 'pause') {
+    mgOver('');
+    MG.phase = 'play';
+    FJ.last = 0;
+    FJ.raf = requestAnimationFrame(fjLoop);
+  }
+}
+ACT['fj-go'] = () => fjPause(false);
+
+function fjKey(e) {
+  const k = e.key;
+  if (k === ' ' || k === 'ArrowUp' || k === 'w' || k === 'W') {
+    if (MG.phase !== 'play') return;
+    e.preventDefault();
+    if (!e.repeat) fjJump();
+  } else if ((k === 'p' || k === 'P') && (MG.phase === 'play' || MG.phase === 'pause')) {
+    e.preventDefault();
+    fjPause(MG.phase === 'play');
+  }
+}
+// Springen sofort beim Antippen (Knopf oder Spielfeld)
+$('#mg').addEventListener('pointerdown', e => {
+  if (MG.on !== 'fj' || !e.target.closest('#fj-jump, #fj-cv')) return;
+  e.preventDefault();
+  fjJump();
+});
+addEventListener('resize', () => { if (MG.on === 'fj') fjFit(); });
+document.addEventListener('visibilitychange', () => { if (document.hidden) fjPause(true); });
+
+// ---------- Zeichnen ----------
+function fjFit() {
+  const cv = FJ.cv;
+  if (!cv) return;
+  const w = cv.getBoundingClientRect().width, px = Math.round(w * Math.min(2, devicePixelRatio || 1));
+  if (px && cv.width !== px) { cv.width = px; cv.height = Math.round(px / FJ_WW); }
+  fjDraw();
+}
+
+function fjStar(cx, x, y, r) {
+  cx.beginPath();
+  for (let i = 0; i < 10; i++) {
+    const a = -Math.PI / 2 + i * Math.PI / 5, rr = i & 1 ? r * 0.45 : r;
+    cx.lineTo(x + Math.cos(a) * rr, y + Math.sin(a) * rr);
+  }
+  cx.closePath();
+}
+
+function fjDraw() {
+  const cx = FJ.cx, C = FJ.col;
+  if (!cx || !C) return;
+  const k = FJ.cv.height, W = FJ.cv.width, G = FJ_GY * k, d = FJ.dist || 0;
+  const wrap = (x, span) => ((x % span) + span) % span;
+  cx.fillStyle = C.sky;
+  cx.fillRect(0, 0, W, k);
+  cx.beginPath();
+  cx.arc(1.38 * k, 0.17 * k, 0.07 * k, 0, Math.PI * 2);
+  cx.fillStyle = C.sun;
+  cx.fill();
+  // Wolken und Hügel ziehen langsamer vorbei (Tiefe)
+  cx.fillStyle = C.cloud;
+  for (const [x0, y, s] of [[0.2, 0.16, 1], [0.95, 0.1, 0.8], [1.5, 0.24, 1.1]]) {
+    const x = (wrap(x0 - d * 0.12, FJ_WW + 0.5) - 0.25) * k;
+    for (const [ox, oy, r] of [[-0.06, 0.012, 0.035], [0, 0, 0.05], [0.06, 0.012, 0.035]]) {
+      cx.beginPath();
+      cx.arc(x + ox * s * k, (y + oy * s) * k, r * s * k, 0, Math.PI * 2);
+      cx.fill();
+    }
+  }
+  cx.fillStyle = C.hill;
+  for (let i = -1; i < 4; i++) {
+    const x = (i * 0.7 - wrap(d * 0.35, 0.7)) * k;
+    cx.beginPath();
+    cx.ellipse(x + 0.35 * k, G + 0.02 * k, 0.42 * k, (i & 1 ? 0.13 : 0.18) * k, 0, Math.PI, 0);
+    cx.fill();
+  }
+  // Boden mit Kieseln
+  cx.fillStyle = C.dirt;
+  cx.fillRect(0, G, W, k - G);
+  cx.fillStyle = C.grass;
+  cx.fillRect(0, G, W, 0.025 * k);
+  cx.fillStyle = C.peb;
+  for (let i = -1; i < 9; i++) {
+    const x = (i * 0.23 - wrap(d, 0.23)) * k;
+    cx.fillRect(x, G + (i & 1 ? 0.06 : 0.11) * k, 0.03 * k, 0.012 * k);
+  }
+  // Hindernisse
+  for (const o of FJ.obs) {
+    const x = (o.x - o.w / 2) * k, w = o.w * k, h = o.h * k, y = G - h + 0.004 * k;
+    if (o.id === 'stone') {
+      snRect(cx, x, y, w, h + 0.01 * k, h * 0.5);
+      cx.fillStyle = C.stone;
+      cx.fill();
+    } else if (o.id === 'bush') {
+      cx.fillStyle = C.bush;
+      for (const [ox, oy, r] of [[0.28, 0.6, 0.3], [0.72, 0.6, 0.3], [0.5, 0.42, 0.38]]) {
+        cx.beginPath();
+        cx.arc(x + ox * w, y + oy * h, r * w, 0, Math.PI * 2);
+        cx.fill();
+      }
+      cx.fillRect(x + 0.1 * w, y + 0.6 * h, 0.8 * w, 0.4 * h);
+    } else {
+      snRect(cx, x, y, w, h + 0.01 * k, 0.012 * k);
+      cx.fillStyle = '#8A5A34';
+      cx.fill();
+      cx.fillStyle = '#C08A5A';
+      cx.beginPath();
+      if (o.id === 'log') cx.ellipse(x + w - 0.02 * k, y + h / 2, 0.018 * k, h / 2.4, 0, 0, Math.PI * 2);
+      else cx.ellipse(x + w / 2, y + 0.008 * k, w / 2.2, 0.012 * k, 0, 0, Math.PI * 2);
+      cx.fill();
+    }
+  }
+  // Sterne
+  cx.lineWidth = Math.max(1, 0.006 * k);
+  for (const s of FJ.stars) {
+    fjStar(cx, s.x * k, G - s.y * k, 0.03 * k);
+    cx.fillStyle = C.star;
+    cx.fill();
+    cx.strokeStyle = C.star2;
+    cx.stroke();
+  }
+  // Fitz: hüpft beim Laufen, kippt im Sprung – nicht bei reduzierter Bewegung
+  const run = MG.phase === 'play' && FJ.h <= 0 && !REDUCED;
+  const bob = run ? Math.abs(Math.sin(d * 16)) * 0.012 : 0;
+  const fy = G - (FJ.h + bob) * k, fx = FJ_X * k, s = FJ_SIZE * k;
+  cx.save();
+  cx.globalAlpha = FJ.inv > 0 ? (REDUCED ? 0.5 : Math.floor(FJ.inv * 10) % 2 ? 0.3 : 1) : 1;
+  cx.fillStyle = '#C9561A';
+  const step = run ? Math.sin(d * 16) * 0.012 : 0;
+  for (const [ox, st] of [[-0.035, step], [0.035, -step]]) {
+    cx.beginPath();
+    cx.ellipse(fx + (ox + st) * k, fy - 0.01 * k, 0.024 * k, 0.014 * k, 0, 0, Math.PI * 2);
+    cx.fill();
+  }
+  cx.translate(fx, fy - 0.1 * k);
+  if (!REDUCED && FJ.h > 0) cx.rotate(clamp(-FJ.vy * 0.12, -0.2, 0.2));
+  if (FJ.img && FJ.img.complete && FJ.img.naturalWidth) cx.drawImage(FJ.img, -s / 2, -s / 2 - 0.01 * k, s, s);
+  cx.restore();
+}
+</script>
+<script>
+/* Wortfuchs – Fuchsbau: mit Fuchstalern Hüte, Schals und Möbel für Fitz kaufen.
+   Ein Kauf ist ein Eintrag im Taler-Verlauf S.red ({k: 'b', b: Sachen-id, min: Preis}), so rechnet der
+   Kontostand von selbst mit und der Abgleich zwischen Geräten klappt. Hut und Schal: S.set.hat / S.set.scarf.
+   Baut auf kern.js, ui.js, views.js und taler.js auf. */
+'use strict';
+
+// ======================= Katalog =======================
+// Hüte in Fuchs-Koordinaten (viewBox 0 0 120 120, Kopf oben bei y 24), Möbel im Bau (viewBox 0 0 320 200).
+// Möbel: vb = Ausschnitt fürs Vorschaubild, front = steht vor Fitz.
+const BAU = [
+  { id: 'h-muetze', k: 'hat', n: 'Pudelmütze', p: 10, art: '<path d="M38 32C38 12 82 12 82 32Z" fill="#D93A3A"/><path d="M50 22v6M60 19v9M70 22v6" stroke="#B02A2E" stroke-width="2.5" stroke-linecap="round"/><rect x="36" y="27" width="48" height="9" rx="4.5" fill="#FFF6EE"/><circle cx="60" cy="11" r="7" fill="#FFF6EE"/>' },
+  { id: 'h-kappe', k: 'hat', n: 'Basecap', p: 10, art: '<path d="M39 31C39 11 81 11 81 31Z" fill="#2E78F0"/><path d="M60 13V31" stroke="#1C58C0" stroke-width="2"/><circle cx="60" cy="14" r="2.5" fill="#1C58C0"/><path d="M36 31Q60 26 84 31Q86 37 80 37Q60 33 40 37Q34 37 36 31Z" fill="#1C58C0"/>' },
+  { id: 'h-zylinder', k: 'hat', n: 'Zylinder', p: 15, art: '<rect x="45" y="1" width="30" height="28" rx="3" fill="#23202E"/><rect x="45" y="19" width="30" height="6" fill="#DC3B40"/><ellipse cx="60" cy="29" rx="25" ry="5" fill="#23202E"/>' },
+  { id: 'h-krone', k: 'hat', n: 'Krone', p: 20, art: '<path d="M40 32V14L50 23L60 8L70 23L80 14V32Z" fill="#F2AE00" stroke="#C77F00" stroke-width="2.5" stroke-linejoin="round"/><circle cx="60" cy="26" r="3" fill="#DC3B40"/><circle cx="49" cy="27" r="2.2" fill="#2E78F0"/><circle cx="71" cy="27" r="2.2" fill="#1E9A55"/>' },
+  { id: 'h-pirat', k: 'hat', n: 'Piratenhut', p: 20, art: '<path d="M28 32Q34 9 60 9Q86 9 92 32Q60 22 28 32Z" fill="#23202E"/><path d="M54 25l12-5M54 20l12 5" stroke="#FFF6EE" stroke-width="2" stroke-linecap="round"/><circle cx="60" cy="18" r="4" fill="#FFF6EE"/>' },
+  { id: 'h-zauber', k: 'hat', n: 'Zauberhut', p: 20, art: '<path d="M42 31L63 1L78 31Z" fill="#6A3FC2"/><ellipse cx="60" cy="31" rx="24" ry="5" fill="#53309C"/><path d="M62 12l1.5 3 3 .5-2.2 2 .6 3-2.9-1.5-2.9 1.5.6-3-2.2-2 3-.5z" fill="#FFD24D"/><circle cx="56" cy="24" r="1.6" fill="#FFD24D"/><circle cx="70" cy="21" r="1.3" fill="#FFD24D"/>' },
+  { id: 's-gruen', k: 'scarf', n: 'Grüner Schal', p: 5, c: ['#1E9A55', '#F2AE00'] },
+  { id: 's-rot', k: 'scarf', n: 'Roter Schal', p: 5, c: ['#D93A3A', '#FFF6EE'] },
+  { id: 's-lila', k: 'scarf', n: 'Lila Schal', p: 5, c: ['#7B4FD6', '#FFD24D'] },
+  { id: 's-tuerkis', k: 'scarf', n: 'Türkiser Schal', p: 5, c: ['#14A3A3', '#FFF6EE'] },
+  { id: 's-schwarz', k: 'scarf', n: 'Schwarz-gelber Schal', p: 5, c: ['#23202E', '#F2AE00'] },
+  { id: 'm-teppich', k: 'room', n: 'Teppich', p: 6, vb: '64 152 192 44',
+    art: '<ellipse cx="160" cy="174" rx="92" ry="17" fill="#C2413A"/><ellipse cx="160" cy="174" rx="78" ry="12" fill="none" stroke="#F2C14E" stroke-width="3" stroke-dasharray="6 5"/>' },
+  { id: 'm-pflanze', k: 'room', n: 'Pflanze', p: 6, vb: '276 90 44 74', front: true,
+    art: '<path d="M307 140C300 122 290 114 286 104C298 108 305 118 307 128C306 112 310 100 318 94C318 110 313 124 309 140Z" fill="#2F9E5B"/><path d="M296 138h22l-3 22h-16z" fill="#B5652B"/>' },
+  { id: 'm-ball', k: 'room', n: 'Fußball', p: 8, vb: '246 160 32 32', front: true,
+    art: '<circle cx="262" cy="176" r="11" fill="#FFFFFF" stroke="#23202E" stroke-width="1.5"/><path d="M262 171l4.5 3.3-1.7 5.3h-5.6l-1.7-5.3z" fill="#23202E"/>' },
+  { id: 'm-lampe', k: 'room', n: 'Lampe', p: 10, vb: '84 48 54 108',
+    art: '<ellipse cx="111" cy="68" rx="26" ry="16" fill="#FFE08A" opacity=".45"/><path d="M111 72V150" stroke="#5B4636" stroke-width="3"/><ellipse cx="111" cy="151" rx="9" ry="3" fill="#5B4636"/><path d="M99 56h24l5 16h-34z" fill="#F2AE00"/>' },
+  { id: 'm-bild', k: 'room', n: 'Bild von London', p: 10, vb: '132 20 56 48',
+    art: '<rect x="138" y="24" width="44" height="40" rx="3" fill="#8A5A34"/><rect x="142" y="28" width="36" height="32" fill="#BFE0FF"/><path d="M142 60v-6q8-5 14 0v6zM164 60v-5q8-5 14 0v5z" fill="#2F9E5B"/><path d="M157 60V40l3-6 3 6v20z" fill="#5B4636"/><circle cx="160" cy="44" r="2.4" fill="#FFF6EE"/>' },
+  { id: 'm-kissen', k: 'room', n: 'Sitzkissen', p: 12, vb: '120 136 80 26',
+    art: '<ellipse cx="160" cy="150" rx="36" ry="10" fill="#7B4FD6"/><ellipse cx="160" cy="146" rx="29" ry="6" fill="#9772E8"/>' },
+  { id: 'm-regal', k: 'room', n: 'Bücherregal', p: 15, vb: '232 48 72 108',
+    art: '<rect x="236" y="52" width="64" height="100" rx="3" fill="#8A5A34"/><rect x="241" y="57" width="54" height="90" fill="#5B3B22"/>'
+      + '<rect x="244" y="62" width="6" height="25" fill="#2E78F0"/><rect x="251" y="66" width="7" height="21" fill="#DC3B40"/><rect x="259" y="62" width="5" height="25" fill="#F2AE00"/><rect x="266" y="64" width="8" height="23" fill="#1E9A55"/><rect x="276" y="68" width="6" height="19" fill="#7B4FD6"/>'
+      + '<rect x="246" y="94" width="6" height="23" fill="#F2AE00"/><rect x="253" y="94" width="6" height="23" fill="#2E78F0"/><rect x="261" y="98" width="7" height="19" fill="#E85D9A"/><circle cx="283" cy="107" r="8" fill="#2E78F0"/><path d="M279 102q5 3 2 8M285 101q3 5 6 4" stroke="#1E9A55" stroke-width="2.5" fill="none" stroke-linecap="round"/>'
+      + '<rect x="245" y="124" width="22" height="7" fill="#1E9A55"/><rect x="247" y="131" width="20" height="7" fill="#DC3B40"/><rect x="244" y="138" width="23" height="7" fill="#F2AE00"/><path d="M280 145v-5h8v5zM279 132q5 6 10 0v-6h-10z" fill="#F2AE00"/>'
+      + '<path d="M241 87h54M241 117h54" stroke="#8A5A34" stroke-width="4"/>' },
+  { id: 'm-lichter', k: 'room', n: 'Lichterkette', p: 15, vb: '4 4 312 30',
+    art: '<path d="M8 10Q84 34 160 12Q236 34 312 10" fill="none" stroke="#5B4636" stroke-width="1.5"/>'
+      + [[46, 23, '#F2AE00'], [84, 26, '#DC3B40'], [122, 23, '#2E78F0'], [160, 16, '#1E9A55'], [198, 23, '#F2AE00'], [236, 26, '#DC3B40'], [274, 23, '#2E78F0']]
+        .map(([x, y, c]) => `<circle cx="${x}" cy="${y}" r="7" fill="${c}" opacity=".25"/><circle cx="${x}" cy="${y}" r="3.6" fill="${c}"/>`).join('') },
+  { id: 'm-teleskop', k: 'room', n: 'Teleskop', p: 25, vb: '192 82 50 74',
+    art: '<path d="M214 112L201 152M214 112L227 152M214 112V152" stroke="#5B4636" stroke-width="3" stroke-linecap="round"/><g transform="rotate(-35 214 108)"><rect x="196" y="102" width="38" height="12" rx="3" fill="#2E78F0"/><rect x="230" y="100" width="8" height="16" rx="2" fill="#1C58C0"/><rect x="192" y="104" width="6" height="8" rx="1.5" fill="#1C58C0"/></g>' },
+  { id: 'm-aquarium', k: 'room', n: 'Aquarium', p: 25, vb: '186 28 56 42',
+    art: '<path d="M190 66h48" stroke="#8A5A34" stroke-width="4" stroke-linecap="round"/><rect x="194" y="34" width="40" height="30" rx="4" fill="#9ED8F5" stroke="#5FA8D3" stroke-width="2"/>'
+      + '<path d="M200 63q-2-8 2-14M228 63q3-7-1-12" stroke="#2F9E5B" stroke-width="2" fill="none" stroke-linecap="round"/><ellipse cx="206" cy="46" rx="5" ry="3" fill="#F2701F"/><path d="M211 46l5-3v6z" fill="#F2701F"/>'
+      + '<ellipse cx="222" cy="55" rx="4" ry="2.5" fill="#F2AE00"/><path d="M218 55l-4-2.5v5z" fill="#F2AE00"/><circle cx="214" cy="41" r="1.4" fill="#FFFFFF"/><circle cx="216" cy="37.5" r="1" fill="#FFFFFF"/>' },
+  { id: 'm-bett', k: 'room', n: 'Bett', p: 30, vb: '4 100 92 56',
+    art: '<rect x="8" y="104" width="10" height="48" rx="3" fill="#8A5A34"/><rect x="12" y="142" width="5" height="10" fill="#5B3B22"/><rect x="84" y="142" width="5" height="10" fill="#5B3B22"/><rect x="8" y="126" width="84" height="18" rx="4" fill="#8A5A34"/>'
+      + '<rect x="14" y="118" width="76" height="12" rx="5" fill="#FFF6EE"/><rect x="40" y="114" width="52" height="16" rx="6" fill="#2E78F0"/><path d="M48 118h40" stroke="#5B9BFF" stroke-width="2" stroke-linecap="round"/><ellipse cx="28" cy="116" rx="11" ry="6" fill="#FFFFFF" stroke="#DEE4EE"/>' },
+];
+const BAU_BY = Object.fromEntries(BAU.map(x => [x.id, x]));
+const BAU_KINDS = [['hat', 'Hüte', 'Fitz trägt immer einen – oder keinen.'], ['scarf', 'Schals', 'Der blaue ist sein Lieblingsschal.'], ['room', 'Möbel', 'Alles bekommt seinen festen Platz im Bau.']];
+
+const bauOwned = () => new Set(S.red.filter(x => x.k === 'b').map(x => x.b));
+
+// Hut und Schal für fox(): look überschreibt das Getragene (Vorschau im Laden)
+function foxWear(look) {
+  const L = { hat: S.set.hat, scarf: S.set.scarf, ...look };
+  const h = BAU_BY[L.hat], sc = BAU_BY[L.scarf];
+  return {
+    sc: sc && sc.c ? sc.c : null,
+    st: sc && sc.c ? ` style="--sc1:${sc.c[0]};--sc2:${sc.c[1]}"` : '',
+    hat: h && h.art ? `<g class="fx-hat">${h.art}</g>` : '',
+  };
+}
+
+// ======================= Der Bau =======================
+function bauRoom(own = bauOwned()) {
+  const items = BAU.filter(x => x.k === 'room' && own.has(x.id));
+  const back = items.filter(x => !x.front).map(x => x.art).join(''), front = items.filter(x => x.front).map(x => x.art).join('');
+  const fitz = fox('', 'bau-fitz').replace('<svg ', '<svg x="130" y="92" width="60" height="60" ');
+  return `<svg class="bau-room" viewBox="0 0 320 200" role="img" aria-label="Fitz in seinem Bau${items.length ? ': ' + esc(items.map(x => x.n).join(', ')) : ''}">
+    <rect class="bau-wall" width="320" height="200"/><path class="bau-wall-2" d="M0 0h320v152H0z" opacity=".5"/>
+    <rect class="bau-floor" y="152" width="320" height="48"/><path class="bau-edge" d="M0 152h320"/>
+    <circle class="bau-sky" cx="64" cy="54" r="22"/><circle class="bau-sun" cx="72" cy="47" r="6"/><path class="bau-frame" d="M64 32v44M42 54h44"/><circle class="bau-frame" cx="64" cy="54" r="22" fill="none"/>
+    ${back}${fitz}${front}</svg>`;
+}
+
+// Vorschaubild im Laden
+function bauPrev(x) {
+  if (x.k === 'room') return `<svg viewBox="${x.vb}" aria-hidden="true" focusable="false">${x.art}</svg>`;
+  return fox('', '', x.k === 'hat' ? { hat: x.id } : { scarf: x.id });
+}
+
+VIEWS.bau = () => {
+  const el = $('#v-bau');
+  if (!talOn()) {
+    el.innerHTML = `<div class="wrap"><div class="card hero-empty">${fox()}<h1>Fuchstaler sind aus</h1>
+      <p>Deine Eltern können sie im Eltern-Bereich einschalten.</p></div></div>`;
+    return;
+  }
+  const own = bauOwned(), free = talFree(), n = BAU.filter(x => own.has(x.id)).length;
+  const card = x => {
+    const has = own.has(x.id), worn = (x.k === 'hat' && S.set.hat === x.id) || (x.k === 'scarf' && S.set.scarf === x.id);
+    let btn;
+    if (!has) {
+      const why = free < x.p ? `Dir fehlen noch ${plural(x.p - Math.max(0, free), 'Taler', 'Taler')}.` : '';
+      btn = `<button class="btn btn-primary btn-sm btn-block" type="button" data-act="bau-buy" data-id="${x.id}" aria-label="${esc(x.n)} kaufen für ${x.p} Taler"${why ? ` aria-disabled="true" data-why="${esc(why)}"` : ''}>${icon('coin')}${x.p}</button>`;
+    } else if (x.k === 'room') btn = `<span class="bau-has">${icon('check')}Steht im Bau</span>`;
+    else if (worn) btn = x.k === 'hat' ? `<button class="btn btn-ghost btn-sm btn-block" type="button" data-act="bau-wear" data-id="">Absetzen</button>` : `<span class="bau-has">${icon('check')}Trägt er</span>`;
+    else btn = `<button class="btn btn-ghost btn-sm btn-block" type="button" data-act="bau-wear" data-id="${x.id}">Anziehen</button>`;
+    return `<li class="bau-item${has ? ' is-own' : ''}${worn ? ' is-worn' : ''}"><div class="bau-prev bau-${x.k}">${bauPrev(x)}</div><b>${esc(x.n)}</b>${btn}</li>`;
+  };
+  // Der blaue Standard-Schal gehört Fitz von Anfang an
+  const blue = `<li class="bau-item is-own${S.set.scarf ? '' : ' is-worn'}"><div class="bau-prev bau-scarf">${fox('', '', { scarf: '' })}</div><b>Blauer Schal</b>${S.set.scarf
+    ? '<button class="btn btn-ghost btn-sm btn-block" type="button" data-act="bau-wear" data-id="s-blau">Anziehen</button>' : `<span class="bau-has">${icon('check')}Trägt er</span>`}</li>`;
+  const sec = ([k, h, sub]) => `<div class="card"><div class="card-h"><h2>${h}</h2><span class="kicker">${BAU.filter(x => x.k === k && own.has(x.id)).length} / ${BAU.filter(x => x.k === k).length}</span></div>
+    <p class="muted bau-sub">${sub}</p><ul class="bau-grid">${k === 'scarf' ? blue : ''}${BAU.filter(x => x.k === k).map(card).join('')}</ul></div>`;
+  el.innerHTML = `<div class="wrap">
+    <div class="page-head"><h1>Fuchsbau</h1><button class="btn btn-ghost btn-sm" type="button" data-go="taler">${icon('arrow-left')}Zurück</button></div>
+    <div class="card bau-hero">${bauRoom(own)}
+      <div class="bau-sum"><span>${icon('coin')}<b>${talBalance()}</b> Taler</span><span>${n} von ${BAU.length} Sachen gesammelt</span></div>
+      <div class="xpbar tal-bar"><i style="width:${pcOf(n, BAU.length)}%"></i></div></div>
+    ${BAU_KINDS.map(sec).join('')}
+  </div>`;
+};
+
+ACT['bau-buy'] = async el => {
+  if (whyToast(el)) return;
+  const x = BAU_BY[el.dataset.id];
+  if (!x || bauOwned().has(x.id) || talFree() < x.p) return;
+  const bal = talBalance();
+  const yes = await ask({ title: `${esc(x.n)} kaufen?`, art: `<div class="bau-prev bau-ask bau-${x.k}">${bauPrev(x)}</div>`,
+    text: `Kostet <b>${x.p} Taler</b> – das sind ${x.p} Minuten Bildschirmzeit. Danach hast du noch ${plural(bal - x.p, 'Taler', 'Taler')}.`,
+    yes: `Kaufen · ${x.p}`, no: 'Lieber sparen' });
+  if (!yes || bauOwned().has(x.id) || talFree() < x.p) return;
+  const t = Date.now();
+  S.red.push({ id: `b-${x.id}-${t.toString(36)}`, t, n: '', min: x.p, k: 'b', b: x.id });
+  if (x.k === 'hat' || x.k === 'scarf') { S.set[x.k] = x.id; S.set.m = t; }
+  commit();
+  Sfx.play('win');
+  confetti(60);
+  toast(`${x.k === 'room' ? 'Neu im Fuchsbau' : 'Fitz trägt jetzt'}: <b>${esc(x.n)}</b>`);
+  talRedraw();
+};
+
+ACT['bau-wear'] = el => {
+  const id = el.dataset.id, x = BAU_BY[id];
+  if (id === 's-blau') setSet('scarf', '');
+  else if (!id) setSet('hat', '');
+  else if (x && bauOwned().has(id)) setSet(x.k, id);
+  Sfx.play('tap');
+  talRedraw();
+};
+</script>
+<script>
 /* Wortfuchs – Start: Spielstand laden, Tastatur, Speichern im Konto. */
 'use strict';
 
@@ -5393,6 +6246,7 @@ document.addEventListener('keydown', e => {
     return;
   }
   if (SN.on) { snKey(e); return; }
+  if (MG.on) { mgKey(e); return; }
   if (!SES) return;
   if (k === 'Tab') { trapFocus(e, $('#session')); return; }
   if (e.altKey || e.ctrlKey || e.metaKey) return;
