@@ -737,7 +737,10 @@ p { margin: 0; }
 .tile.ghost { color: transparent; background: var(--rule); border-color: transparent; box-shadow: none; }
 .tline .tile { animation: pop .25s var(--ease-pop); }
 .tline.is-right .tile { border-color: var(--good); background: var(--good-soft); box-shadow: 0 4px 0 var(--good); }
-.tline.is-wrong .tile { border-color: var(--bad); background: var(--bad-soft); box-shadow: 0 4px 0 var(--bad); }
+/* Falsch gelegt: nur die falschen Kacheln rot, fehlende als gestrichelte Lücke */
+.tline.is-checked .tile { animation: none; }
+.tline .tile.is-bad { border-color: var(--bad); background: var(--bad-soft); box-shadow: 0 4px 0 var(--bad); animation: shake .4s; }
+.tile.tile-gap { border: 2px dashed var(--bad); background: transparent; box-shadow: none; }
 
 /* Schreiben */
 .type-wrap { position: relative; }
@@ -948,6 +951,27 @@ body.ses-open { overflow: hidden; }
 .grade-hero + .goalbar { margin-top: 20px; }
 .ses-body:focus { outline: none; }
 
+/* ---------- Sprechen (sprechen.js) ---------- */
+.spk-text.is-ex { font-size: 23px; line-height: 1.35; }
+.spk-text b { color: var(--fox); font-weight: 700; }
+.spk-text .spk-miss { background: var(--near-soft); color: inherit; border-radius: 6px; padding: 0 3px; box-shadow: inset 0 -3px 0 var(--near); }
+.spk-say { display: flex; flex-direction: column; gap: 8px; flex: none; }
+.spk { display: flex; flex-direction: column; align-items: center; gap: 14px; margin: 6px 0 10px; }
+.spk-mic {
+  display: inline-flex; flex-direction: column; align-items: center; justify-content: center; gap: 6px;
+  width: min(100%, 320px); min-height: 124px; padding: 16px; border: 0; border-radius: 28px; cursor: pointer;
+  background: var(--sky); color: #fff; box-shadow: 0 6px 0 var(--sky-deep);
+  font-family: var(--f-display); font-weight: 600; font-size: 20px;
+}
+.spk-mic .ic { width: 48px; height: 48px; }
+.spk-mic:active { transform: translateY(4px); box-shadow: 0 2px 0 var(--sky-deep); }
+.spk-mic.is-on { background: var(--good); box-shadow: 0 6px 0 var(--good-deep); animation: spk-pulse 1.2s ease-in-out infinite; }
+.spk-mic:disabled { background: var(--card-2); color: var(--ink-3); box-shadow: 0 6px 0 var(--rule); cursor: default; transform: none; }
+.spk-status { min-height: 1.5em; max-width: 520px; text-align: center; font-weight: 700; color: var(--ink-2); overflow-wrap: anywhere; }
+.spk-status.is-live { color: var(--ink); }
+.spk-status.is-bad { padding: 8px 14px; border-radius: 14px; background: var(--near-soft); color: var(--ink); }
+@keyframes spk-pulse { 0%, 100% { box-shadow: 0 6px 0 var(--good-deep), 0 0 0 0 color-mix(in srgb, var(--good) 45%, transparent); } 50% { box-shadow: 0 6px 0 var(--good-deep), 0 0 0 14px color-mix(in srgb, var(--good) 0%, transparent); } }
+
 /* ---------- Dialog & Toast ---------- */
 .modal {
   position: fixed; inset: 0; z-index: 80; display: grid; place-items: center; padding: 16px;
@@ -1142,6 +1166,7 @@ body.ses-open { overflow: hidden; }
   /* Blitz-Feier ruhig: Karte steht still, ohne Lichtblitz */
   .zap-fx, .zap-card, .zap-bolt, .zap-rays { animation: none !important; }
   .zap-flash { display: none; }
+  .spk-mic.is-on { animation: none !important; }
 }
 </style>
 
@@ -1601,7 +1626,7 @@ const xpAt = L => 50 * L * (L - 1);
 function fresh() {
   return {
     v: 1, t0: Date.now(), onb: false, rs: 0,
-    set: { name: '', goal: 100, sfx: true, tts: true, rate: 0.9, voice: '', m: 0, tal: true, tk: 60, td: 20, tm: 60 },
+    set: { name: '', goal: 100, sfx: true, tts: true, spk: true, rate: 0.9, voice: '', m: 0, tal: true, tk: 60, td: 20, tm: 60 },
     w: {}, days: {}, asg: {}, cur: '', curM: 0, tests: [], bdg: {}, st: {},
     pair: { k: '', m: 0 }, req: { c: '', o: 0, n: 0, m: 0 }, red: [],
   };
@@ -3014,6 +3039,7 @@ function parentsHTML() {
       <div class="set-row"><div><span class="lbl">Tagesziel</span></div>${sel('set-goal', S.set.goal, GOALS.map(g => [g, `${fmtN(g)} XP – ${GOAL_TXT[g][0]}`]), 'Tagesziel')}</div>
       ${switchRow('set-sfx', S.set.sfx, 'Soundeffekte', 'Kurze Klänge bei richtig und falsch')}
       ${TTS.ok ? switchRow('set-tts', S.set.tts, 'Wörter vorlesen', 'Liest englische Wörter automatisch vor und aktiviert Hör-Übungen') : ''}
+      ${spkOk() ? switchRow('set-spk', S.set.spk !== false, 'Sprech-Übungen', 'Wörter und Sätze laut vorlesen. Die Aufnahme wertet die Spracherkennung des Browsers aus (Google bzw. Apple).') : ''}
       ${voiceRow}
     </div>
     <div class="card danger"><div class="card-h"><h2>Neu anfangen</h2></div>
@@ -3169,7 +3195,7 @@ function knownWords(pool) {
 }
 
 // ---------- Übungsschritte planen ----------
-// Schritt {t, w, g}: t = intro | mcEn | mcDe | listen | spell | gapc | match | tiles | type | gapt,
+// Schritt {t, w, g}: t = intro | mcEn | mcDe | listen | spell | gapc | match | tiles | type | gapt | speak (sprechen.js),
 // g = recog (erkennen) | recall (selbst wissen)
 const stepA = w => canListen() && Math.random() < 0.4 ? { t: 'listen', w, g: 'recog' } : { t: 'mcEn', w, g: 'recog' };
 function stepB(w) {
@@ -3255,6 +3281,7 @@ function startSession(kind, o = {}) {
     steps = planReview(list);
   }
   if (!steps.length) { toast('Hier gibt es gerade nichts zu üben.'); return; }
+  steps = spkPlan(steps, kind);   // Sprech-Aufgaben (sprechen.js)
   SES = newSes(kind, { q: steps, st, list, pool });
   openSession();
   nextStep();
@@ -3280,6 +3307,7 @@ function closeSession() {
   if (!SES) return;
   if (SES.tick) clearInterval(SES.tick);
   stopAuto();
+  spkStop();
   SES = null;
   TTS.stop();
   $('#session').hidden = true;
@@ -3402,6 +3430,7 @@ function nextStep() {
   else if (s.t === 'match') renderMatch(s);
   else if (s.t === 'tiles') renderTiles(s);
   else if (s.t === 'type' || s.t === 'gapt') renderType(s);
+  else if (s.t === 'speak') renderSpeak(s);
   else renderChoice(s);
   renderBar();
   renderMeta();
@@ -3637,13 +3666,27 @@ ACT.tile = el => tilePut(+el.dataset.i);
 ACT['tile-back'] = el => tileBack(+el.dataset.i);
 
 function checkTiles() {
-  const s = SES.cur, V = SES.view;
+  const s = SES.cur, V = SES.view, sp = V.sp, sep = sp.m === 'letters' ? '' : ' ';
   if (!V.line.length) return;
-  const got = V.line.map(i => V.bank[i].t).join(V.sp.m === 'letters' ? '' : ' ');
-  const ok = got === V.sp.target;
-  $('#tline').classList.add(ok ? 'is-right' : 'is-wrong');
+  const got = V.line.map(i => V.bank[i].t).join(sep);
+  const ok = got === sp.target;
   $$('#ses-body button.tile').forEach(b => { b.disabled = true; });
-  judge(s, ok ? 'ok' : 'bad');
+  if (ok) {
+    $('#tline').classList.add('is-right');
+    judge(s, 'ok');
+  } else {
+    // Kachel für Kachel vergleichen: nur falsche Kacheln rot, fehlende als gestrichelte Lücke
+    const unit = (c, i) => ({ c, k: c, free: false, i });
+    const pre = sp.pre ? [{ c: sp.pre + ' ', k: sp.pre, free: true }] : [];
+    const dx = dxAlign([...pre, ...V.line.map(i => unit(V.bank[i].t, i))], [...pre, ...sp.parts.map(c => unit(c))]).ops;
+    const lt = sp.m === 'letters' ? ' letter' : '';
+    $('#tline').innerHTML = (sp.pre ? `<span class="pre" lang="en">${esc(sp.pre)}</span>` : '')
+      + dx.filter(o => !(o.a || o.b).free).map(o => o.a
+        ? `<button class="tile${lt}${o.op === '=' ? '' : ' is-bad'}" type="button" disabled lang="en">${esc(o.a.c)}</button>`
+        : `<span class="tile${lt} tile-gap" aria-hidden="true"></span>`).join('');
+    $('#tline').classList.add('is-checked');
+    judge(s, 'bad', { dx, sep });
+  }
   $('#ses-go').focus({ preventScroll: true });
 }
 
@@ -3787,8 +3830,8 @@ function showFeedback(s, res, x = {}) {
   if (w.no) hints.push(`<b>Merke:</b> ${esc(w.no)}`);
   const dx = res !== 'ok' && x.dx;
   $('#ses-fb').innerHTML = `<div class="fb-head">${fox(mood)}<span>${head}</span>${V.xp ? `<span class="fb-xp">+${V.xp} XP</span>` : ''}</div>
-    ${dx ? `<p class="fb-ans fb-you">Du: <b lang="en" class="dx">${dxHTML(dx, 'you')}</b></p>` : ''}
-    <div class="fb-row"><p class="fb-ans">${res === 'ok' || x.found ? '' : 'Richtig: '}<b lang="en"${dx ? ' class="dx"' : ''}>${dx ? dxHTML(dx, 'fix') : esc(shown)}</b> = ${esc(deShort(w))}</p>${sayBtn(w)}</div>
+    ${dx ? `<p class="fb-ans fb-you">Du: <b lang="en" class="dx">${dxHTML(dx, 'you', x.sep)}</b></p>` : ''}
+    <div class="fb-row"><p class="fb-ans">${res === 'ok' || x.found ? '' : 'Richtig: '}<b lang="en"${dx ? ' class="dx"' : ''}>${dx ? dxHTML(dx, 'fix', x.sep) : esc(shown)}</b> = ${esc(deShort(w))}</p>${sayBtn(w)}</div>
     ${hints.map(h => `<p class="fb-hint">${h}</p>`).join('')}`;
   V.canOver = (s.t === 'type' || s.t === 'gapt') && (res === 'bad' || res === 'near') && !x.over;
   setSkip(V.canOver ? 'Ich hatte recht' : '');
@@ -3800,15 +3843,17 @@ function showFeedback(s, res, x = {}) {
 
 // Korrektur zeigen: „you“ = Eingabe mit falschen Buchstaben rot und Lücken, wo etwas fehlt;
 // „fix“ = richtiges Wort, die korrigierten Buchstaben grün
-function dxHTML(ops, side) {
-  let html = '', run = '', cls = '';
+// sep = ' ' bei Wort-Kacheln: Leerzeichen zwischen den Wörtern, jedes Wort eigens markiert
+function dxHTML(ops, side, sep = '') {
+  let html = '', run = '', cls = '', n = 0;
   const flush = () => { if (run) html += cls ? `<mark class="${cls}">${run}</mark>` : run; run = ''; };
-  const put = (c, k) => { if (k !== cls) { flush(); cls = k; } run += esc(c); };
+  const space = () => { if (sep && n++) { flush(); html += sep; } };
+  const put = (c, k, free) => { if (!free) space(); if (k !== cls) { flush(); cls = k; } run += esc(c); };
   for (const o of ops) {
     if (side === 'you') {
-      if (o.op !== '+') put(o.a.c, o.op === '=' || o.a.free ? '' : 'dx-bad');
-      else if (!o.b.free) { flush(); html += '<span class="dx-gap" aria-hidden="true"></span>'; }
-    } else if (o.op !== '-') put(o.b.c, o.op === '=' || o.b.free ? '' : 'dx-fix');
+      if (o.op !== '+') put(o.a.c, o.op === '=' || o.a.free ? '' : 'dx-bad', o.a.free);
+      else if (!o.b.free) { space(); flush(); html += '<span class="dx-gap" aria-hidden="true"></span>'; }
+    } else if (o.op !== '-') put(o.b.c, o.op === '=' || o.b.free ? '' : 'dx-fix', o.b.free);
   }
   flush();
   return html;
@@ -3887,6 +3932,7 @@ function sesGo() {
   if (t === 'intro') introDone();
   else if (t === 'tiles') checkTiles();
   else if (t === 'type' || t === 'gapt') checkTyped();
+  else if (t === 'speak') spkGo();
 }
 
 function sesSkip() {
@@ -3897,6 +3943,7 @@ function sesSkip() {
   if (SES.phase !== 'ask' || !SES.cur) return;
   const s = SES.cur, V = SES.view;
   if (s.t === 'intro' || s.t === 'match') return;
+  if (s.t === 'speak') { spkSkip(); return; }
   if (V.opts) markOpts(-1, V.right);
   if (V.t === 'gapc') { const g = $('#gap-slot'); g.textContent = s.w.gap.word; g.classList.add('is-right'); }
   $$('#ses-body button.tile').forEach(b => { b.disabled = true; });
@@ -4313,6 +4360,286 @@ function testPractice() {
   closeSession();
   if (list.length) startSession('oops', { words: list });
 }
+</script>
+<script>
+/* Wortfuchs – Sprechen: ein Wort oder einen Beispielsatz laut vorlesen, die Spracherkennung
+   des Browsers hört zu (Chrome, Edge, Safari auf iPad/iPhone/Mac). Wo sie fehlt oder das Mikrofon
+   gesperrt ist (Firefox, claude.ai-Viewer), gibt es keine Sprech-Aufgaben. Baut auf ueben.js auf. */
+'use strict';
+
+ICONS.mic = '<rect x="9" y="2" width="6" height="12" rx="3"/><path d="M5 10v1a7 7 0 0 0 14 0v-1M12 18v4M8 22h8"/>';
+
+const SPK_XP = 10, SPK_TRIES = 3, SPK_PAUSE = 15 * 60e3;
+const SpeechRec = window.SpeechRecognition || window.webkitSpeechRecognition || null;
+// Darf diese Seite das Mikrofon benutzen? In einem fremden Rahmen (claude.ai) meist nicht.
+const SPK_ALLOWED = (() => {
+  try {
+    const p = document.permissionsPolicy || document.featurePolicy;
+    return p ? p.allowsFeature('microphone') : window.top === window;
+  } catch (e) { return false; }
+})();
+// rec = laufende Erkennung, until = „Jetzt nicht sprechen“ bis dahin, dead = geht hier nicht (bis zum Neuladen)
+const SPK = { rec: null, until: 0, dead: false };
+const spkOk = () => !!SpeechRec && SPK_ALLOWED && !SPK.dead;
+const spkOn = () => spkOk() && S.set.spk !== false && Date.now() > SPK.until;
+
+// ---------- Was gesagt werden soll ----------
+// Das Wort selbst – ohne sb/sth, „…“ oder „/“ – oder der Beispielsatz, wenn er kurz ist
+function spkTargets(w) {
+  const out = [];
+  const p = w.plain.replace(APOS, "'");
+  if (p.length <= 40 && !/[…/()]|\.\.\.|\b(sb|sth)\b/.test(p)) out.push({ say: p, ex: false });
+  const ex = w.ex && w.ex.replace(APOS, "'");
+  if (ex && ex.length <= 70 && ex.split(' ').length <= 10 && !/[…/()–—]|\.\.\./.test(ex)) out.push({ say: ex, ex: true });
+  return out;
+}
+
+// Sprech-Aufgaben in eine geplante Übung mischen: bei neuen Stationen 2, sonst 1–2,
+// jeweils zwei Schritte nach dem ersten Auftritt des Wortes (in der Station: nach Kennenlernen und Erkennen)
+function spkPlan(steps, kind) {
+  if (!spkOn() || !steps.length) return steps;
+  const first = new Map();
+  steps.forEach((s, i) => { if (s.w && !first.has(s.w)) first.set(s.w, i); });
+  const words = shuffle([...first.keys()].filter(w => spkTargets(w).length));
+  const n = kind === 'lesson' || steps.length >= 10 ? 2 : 1;
+  const add = words.slice(0, n).map(w => {
+    const c = spkTargets(w), tg = c.length > 1 && Math.random() < 0.5 ? c[1] : c[0];
+    return { at: first.get(w) + 2, s: { t: 'speak', w, g: 'recog', say: tg.say, ex: tg.ex } };
+  });
+  const out = steps.slice();
+  for (const a of add.sort((x, y) => y.at - x.at)) out.splice(Math.min(a.at, out.length), 0, a.s);
+  return out;
+}
+
+// ---------- Vergleichen ----------
+// Kurzformen ausschreiben, Zahlen als Wort, gleich klingende Wörter zusammenlegen –
+// so zählt „it is“ für „it's“, „11“ für „eleven“ und „hare“ für „hair“
+const SPK_NUM = 'zero one two three four five six seven eight nine ten eleven twelve thirteen fourteen fifteen sixteen seventeen eighteen nineteen twenty'.split(' ');
+const SPK_TENS = ['', '', 'twenty', 'thirty', 'forty', 'fifty', 'sixty', 'seventy', 'eighty', 'ninety'];
+const spkNum = n => n <= 20 ? SPK_NUM[n] : n < 100 ? SPK_TENS[Math.floor(n / 10)] + (n % 10 ? ' ' + SPK_NUM[n % 10] : '') : String(n);
+const SPK_SAME = new Map();
+for (const g of ['to too two', 'for four', 'right write', 'hair hare', 'sea see', 'son sun', 'there their', 'no know',
+  'one won', 'by buy bye', 'eight ate', 'hour our', 'wear where', 'week weak', 'meet meat', 'new knew', 'piece peace',
+  'blue blew', 'hear here', 'which witch', 'night knight', 'wait weight', 'pair pear', 'whole hole', 'mum mom mam',
+  'okay ok', 'grey gray', 'mr mister', 'mrs missus', 'flour flower', 'tail tale', 'sail sale', 'road rode', 'red read', 'be bee'])
+  for (const x of g.split(' ')) SPK_SAME.set(x, g.split(' ')[0]);
+function spkToks(s) {
+  return String(s).toLowerCase().replace(APOS, "'")
+    .replace(/\bcan't\b|\bcannot\b/g, 'can not').replace(/\bwon't\b/g, 'will not').replace(/\blet's\b/g, 'let us')
+    .replace(/n't\b/g, ' not').replace(/'re\b/g, ' are').replace(/'m\b/g, ' am').replace(/'ll\b/g, ' will')
+    .replace(/'ve\b/g, ' have').replace(/'d\b/g, ' would').replace(/'s\b/g, ' is')
+    .replace(/\d+/g, d => ' ' + spkNum(+d) + ' ')
+    .replace(/[^a-z' ]+/g, ' ').replace(/'/g, '')
+    .split(' ').filter(Boolean).map(t => SPK_SAME.get(t) || t);
+}
+// Gleiches Wort? Kurze Wörter genau, längere mit 1–2 Abweichungen (favorite ≈ favourite)
+const spkSame = (a, b) => a === b || (a.length >= 4 && osa(a, b) <= (a.length >= 7 ? 2 : 1));
+
+// Welche Wörter des Ziels kamen in der richtigen Reihenfolge vor? (längste gemeinsame Folge)
+function spkMatch(want, heard) {
+  const m = want.length, n = heard.length, d = [];
+  for (let i = 0; i <= m; i++) d[i] = new Array(n + 1).fill(0);
+  for (let i = 1; i <= m; i++) for (let j = 1; j <= n; j++)
+    d[i][j] = spkSame(want[i - 1], heard[j - 1]) ? d[i - 1][j - 1] + 1 : Math.max(d[i - 1][j], d[i][j - 1]);
+  const hit = new Array(m).fill(false);
+  for (let i = m, j = n; i && j;) {
+    if (spkSame(want[i - 1], heard[j - 1]) && d[i][j] === d[i - 1][j - 1] + 1) { hit[i - 1] = true; i--; j--; }
+    else if (d[i - 1][j] >= d[i][j - 1]) i--; else j--;
+  }
+  return hit;
+}
+
+// Locker werten: Beim Wort zählen to/a/an/the vorne nicht; bis 2 Wörter müssen alle passen, sonst 70 %.
+// alts = alle Vorschläge der Erkennung; der beste zählt. Ergebnis {ok, hit, heard}
+function spkJudge(s, alts) {
+  const want = spkToks(s.say);
+  const skip = s.ex ? 0 : (want.length > 1 && /^(to|a|an|the)$/.test(want[0]) ? 1 : 0);
+  let best = null;
+  for (const a of alts) {
+    const hit = spkMatch(want, spkToks(a));
+    const core = hit.slice(skip), got = core.filter(Boolean).length;
+    const ok = core.length <= 2 ? got === core.length : got / core.length >= 0.7;
+    const sc = got / Math.max(1, core.length) + (ok ? 1 : 0);
+    if (!best || sc > best.sc) best = { ok, hit, heard: a, sc };
+  }
+  return best || { ok: false, hit: want.map(() => false), heard: '', sc: 0 };
+}
+
+// ---------- Anzeigen ----------
+// Zieltext; nach einem Versuch sind die nicht verstandenen Wörter markiert
+function spkTextHTML(s, hit) {
+  const keys = s.ex && s.w.gap ? new Set(s.w.gap.word.toLowerCase().split(/\s+/)) : null;
+  let k = 0;
+  return s.say.split(' ').map(part => {
+    const n = spkToks(part).length;
+    const miss = hit && n && hit.slice(k, k + n).some(h => !h);
+    k += n;
+    const key = keys && keys.has(part.replace(/[^A-Za-z']/g, '').toLowerCase());
+    return miss ? `<mark class="spk-miss">${esc(part)}</mark>` : key ? `<b>${esc(part)}</b>` : esc(part);
+  }).join(' ');
+}
+
+function renderSpeak(s) {
+  const w = s.w, V = SES.view;
+  V.t = 'speak';
+  V.tries = 0;
+  const say = TTS.ok ? `<button class="say" type="button" data-act="spk-say" aria-label="Anhören">${icon('volume')}</button>
+    <button class="say" type="button" data-act="spk-say" data-slow="1" aria-label="Langsam anhören">${icon('snail')}</button>` : '';
+  $('#ses-body').innerHTML = `${kicker(s.ex ? 'Lies den Satz laut vor' : 'Sag das Wort laut', s)}
+    <div class="prompt">${fox('')}<div class="prompt-box"><div class="prompt-main">
+      <div class="prompt-text en spk-text${s.ex ? ' is-ex' : ''}" id="spk-text" lang="en">${spkTextHTML(s)}</div>
+      ${s.ex ? '' : `<span class="prompt-sub">${esc(deShort(w))}</span>`}</div><div class="spk-say">${say}</div></div></div>
+    <div class="spk">
+      <button class="spk-mic" type="button" id="spk-mic" data-act="spk-mic" aria-describedby="spk-status">${icon('mic')}<span>Tippe und sprich</span></button>
+      <p class="spk-status" id="spk-status" aria-live="polite">${COARSE ? 'Tippe aufs Mikrofon' : 'Klick aufs Mikrofon oder drück Enter'} und sprich deutlich.</p>
+    </div>`;
+  setSkip('Jetzt nicht sprechen');
+  setGo(`${icon('mic')}Sprechen`);
+  if (canListen()) after(350, () => { if (SES && SES.cur === s && !SPK.rec) TTS.speak(speakable(s.say)); });
+}
+ACT['spk-say'] = el => { const s = SES && SES.cur; if (s && s.t === 'speak') { spkStop(); TTS.speak(speakable(s.say), !!el.dataset.slow); } };
+ACT['spk-mic'] = () => spkGo();
+
+function spkStatus(html, cls = '') {
+  const el = $('#spk-status');
+  if (el) { el.innerHTML = html; el.className = 'spk-status' + (cls ? ' ' + cls : ''); }
+}
+function spkListening(on) {
+  const b = $('#spk-mic');
+  if (b) { b.classList.toggle('is-on', on); b.querySelector('span').textContent = on ? 'Ich höre zu …' : 'Tippe und sprich'; }
+  setGo(on ? `${icon('check')}Fertig` : `${icon('mic')}Sprechen`, on ? 'btn-good' : 'btn-primary');
+}
+
+// ---------- Zuhören ----------
+// Mikrofon an – oder, wenn es schon läuft, fertig gesprochen
+function spkGo() {
+  const s = SES && SES.cur;
+  if (!s || s.t !== 'speak' || SES.phase !== 'ask') return;
+  if (SPK.rec) { try { SPK.rec.stop(); } catch (e) { /* schon aus */ } return; }
+  TTS.stop();
+  let rec;
+  try { rec = new SpeechRec(); } catch (e) { spkGone('Dein Browser kann hier leider nicht zuhören.'); return; }
+  rec.lang = 'en-GB';
+  rec.interimResults = true;
+  rec.maxAlternatives = 5;
+  rec.continuous = false;
+  const R = { alts: [], live: '', err: '' };
+  rec.onresult = e => {
+    let live = '';
+    for (let i = e.resultIndex; i < e.results.length; i++) {
+      const r = e.results[i];
+      if (r.isFinal) { for (let k = 0; k < r.length; k++) R.alts.push(r[k].transcript); }
+      else live += r[0].transcript;
+    }
+    R.live = live || R.alts[0] || R.live;
+    if (SES && SES.cur === s && R.live) spkStatus(`„<span lang="en">${esc(R.live.trim())}</span>“`, 'is-live');
+  };
+  rec.onerror = e => { R.err = e.error || 'x'; };
+  rec.onend = () => {
+    clearTimeout(R.cap);
+    if (SPK.rec !== rec) return;
+    SPK.rec = null;
+    if (!SES || SES.cur !== s || SES.phase !== 'ask') return;
+    spkListening(false);
+    if (!R.alts.length && R.live) R.alts.push(R.live);   // Safari liefert manchmal kein „final“
+    spkHeard(s, R);
+  };
+  SPK.rec = rec;
+  try { rec.start(); } catch (e) { SPK.rec = null; spkStatus('Das Mikrofon startet gerade nicht. Versuch es gleich nochmal.', 'is-bad'); return; }
+  spkListening(true);
+  spkStatus('Sprich jetzt!', 'is-live');
+  // Sicherheitshalber: nach spätestens 8 bzw. 12 Sekunden auswerten – und falls dann kein Ende kommt, selbst beenden
+  R.cap = setTimeout(() => {
+    if (SPK.rec !== rec) return;
+    try { rec.stop(); } catch (e) { /* egal */ }
+    R.cap = setTimeout(() => { if (SPK.rec === rec) rec.onend(); }, 1500);
+  }, s.ex ? 12000 : 8000);
+}
+
+function spkStop() {
+  const r = SPK.rec;
+  SPK.rec = null;
+  if (r) try { r.abort(); } catch (e) { /* schon aus */ }
+}
+
+function spkHeard(s, R) {
+  if (R.err && !R.alts.length) {
+    if (R.err === 'not-allowed' || R.err === 'service-not-allowed' || R.err === 'audio-capture')
+      return spkGone(R.err === 'audio-capture' ? 'Ich finde kein Mikrofon.' : 'Das Mikrofon ist hier nicht erlaubt.');
+    if (R.err === 'network') return spkGone('Die Spracherkennung braucht Internet.');
+    if (R.err !== 'no-speech' && R.err !== 'aborted') return spkStatus('Da ist etwas schiefgegangen. Versuch es nochmal.', 'is-bad');
+  }
+  if (!R.alts.length) { spkStatus('Ich habe nichts gehört. Sprich etwas lauter und näher am Gerät.', 'is-bad'); return; }
+  const r = spkJudge(s, R.alts), V = SES.view;
+  if (r.ok) { spkDone(s, 'ok', r); return; }
+  V.tries++;
+  $('#spk-text').innerHTML = spkTextHTML(s, r.hit);
+  if (V.tries >= SPK_TRIES) { spkDone(s, 'pass', r); return; }
+  Sfx.play('near');
+  spkStatus(`Ich habe verstanden: „<span lang="en">${esc(r.heard)}</span>“<br>Die markierten Wörter nochmal – du schaffst das!`, 'is-bad');
+}
+
+// Mikrofon geht hier nicht: ohne Fehler weiter, keine weiteren Sprech-Aufgaben
+function spkGone(msg) {
+  SPK.dead = true;
+  toast(`${msg} Sprech-Aufgaben sind erstmal aus.`);
+  spkDrop();
+}
+// „Jetzt nicht sprechen“: 15 Minuten keine Sprech-Aufgaben
+function spkSkip() {
+  spkStop();
+  SPK.until = Date.now() + SPK_PAUSE;
+  toast('Okay – 15 Minuten keine Sprech-Aufgaben.');
+  spkDrop();
+}
+function spkDrop() {
+  spkStop();
+  SES.q = SES.q.filter(x => x.t !== 'speak');
+  SES.done++;
+  nextStep();
+}
+
+// Ergebnis: ok = XP und Kombo wie eine richtige Antwort; pass = nach 3 Versuchen ohne Fehler weiter.
+// Der Lernstand des Wortes bleibt unverändert – Vorlesen zeigt nicht, ob man die Bedeutung weiß.
+function spkDone(s, res, r) {
+  const V = SES.view;
+  V.res = res;
+  V.xp = 0;
+  if (res === 'ok') {
+    V.xp = V.tries ? 6 : SPK_XP;
+    SES.ok++;
+    SES.combo++;
+    bump('a');
+    bump('ok');
+    statInc('spoke');
+    addXP(V.xp);
+    comboZap();
+    SES.best = Math.max(SES.best, SES.combo);
+    statMax('combo', SES.combo);
+  }
+  SES.done++;
+  SES.phase = 'fb';
+  commit();
+  const ok = res === 'ok';
+  setFoot(ok ? 'ok' : 'near');
+  $('#spk-text').innerHTML = spkTextHTML(s, ok ? null : r.hit);
+  $('#spk-mic').disabled = true;
+  $('#spk-mic span').textContent = ok ? 'Geschafft!' : 'Nächstes Mal klappt’s';
+  spkStatus(r.heard ? `Ich habe verstanden: „<span lang="en">${esc(r.heard)}</span>“` : '');
+  $('#ses-fb').innerHTML = `<div class="fb-head">${fox(ok ? 'happy' : 'wow')}<span>${ok ? (V.tries ? 'Geschafft!' : pickOne(['Super ausgesprochen!', 'Klingt klasse!', 'Sehr gut gesprochen!'])) : 'Nicht schlimm – weiter geht’s!'}</span>${V.xp ? `<span class="fb-xp">+${V.xp} XP</span>` : ''}</div>
+    <div class="fb-row"><p class="fb-ans"><b lang="en">${esc(s.w.plain)}</b> = ${esc(deShort(s.w))}</p>${sayBtn(s.w)}</div>
+    ${ok ? '' : '<p class="fb-hint">Hör es dir nochmal an und sprich es leise mit. Das zählt nicht als Fehler.</p>'}`;
+  setSkip('');
+  setGo(`Weiter ${icon('arrow-right')}`, ok ? 'btn-good' : 'btn-near');
+  Sfx.play(ok ? 'ok' : 'near');
+  if (ok) autoNext(V.zap ? ZAP_MS - 300 : AUTO_HINT_MS);
+  renderBar();
+  renderMeta(ok);
+  $('#ses-go').focus({ preventScroll: true });
+}
+
+// Eltern-Einstellung (views.js zeigt den Schalter nur, wo Sprechen möglich ist)
+CHG['set-spk'] = el => setSet('spk', el.checked);
 </script>
 <script>
 /* Wortfuchs – Fuchstaler: beim Lernen verdienen, für Wort-Snake ausgeben oder gegen
