@@ -1251,6 +1251,47 @@ body.ses-open { overflow: hidden; }
 .fj-jump { width: min(100%, 380px); min-height: 72px; font-size: 22px; touch-action: manipulation; -webkit-user-select: none; user-select: none; -webkit-touch-callout: none; }
 .fj-jump .ic { width: 28px; height: 28px; }
 
+/* Aktivität für die Eltern (aktivitaet.js) */
+.akt { margin-top: 16px; }
+.akt-remote { margin-top: 0; }
+.akt + .card { margin-top: 16px; }
+.akt-lead { margin: 2px 0 14px; font-weight: 600; color: var(--ink-2); }
+.akt-lead b { color: var(--ink); }
+.akt-wk { display: grid; grid-template-columns: minmax(0, 1fr) auto auto auto; font-size: 15px; }
+.akt-wk-row { display: contents; }
+.akt-wk-row > * { display: flex; align-items: center; justify-content: flex-end; padding: 8px 0 8px 10px; border-top: 1px solid var(--rule); white-space: nowrap; }
+.akt-wk-row > :first-child { justify-content: flex-start; padding-left: 0; font-weight: 700; color: var(--ink-2); white-space: normal; overflow-wrap: anywhere; }
+.akt-wk-row > b { font-family: var(--f-display); font-weight: 600; font-size: 17px; }
+.akt-wk-row > .muted { font-weight: 700; }
+.akt-wk-h > * { padding-top: 0; border-top: 0; font-size: 12px; font-weight: 900; letter-spacing: .08em; text-transform: uppercase; color: var(--ink-3); }
+.akt-d { padding: 2px 7px; border-radius: 99px; background: var(--card-2); color: var(--ink-2); font-style: normal; font-size: 12.5px; font-weight: 800; }
+.akt-d.is-up { background: var(--good-soft); color: var(--good-deep); }
+.akt-d.is-down { background: var(--near-soft); color: var(--near-deep); }
+.akt-days, .akt-day ul { list-style: none; margin: 0; padding: 0; }
+.akt-days { margin-top: 6px; }
+.akt-day + .akt-day { margin-top: 14px; }
+.akt-day-h { display: flex; align-items: baseline; justify-content: space-between; gap: 4px 12px; flex-wrap: wrap; padding: 6px 0; border-bottom: 2px solid var(--rule); }
+.akt-day-h b { font-weight: 900; }
+.akt-day-h span { font-size: 13px; font-weight: 800; color: var(--ink-3); }
+.akt-row { display: grid; grid-template-columns: 3.1em 30px minmax(0, 1fr); align-items: center; gap: 10px; padding: 9px 0; border-bottom: 1px solid var(--rule); }
+.akt-row:last-child { border-bottom: 0; }
+.akt-row time { font-size: 13px; font-weight: 800; color: var(--ink-3); font-variant-numeric: tabular-nums; }
+.akt-row b { display: block; font-weight: 800; overflow-wrap: anywhere; }
+.akt-row small { display: block; font-size: 13px; font-weight: 700; color: var(--ink-3); overflow-wrap: anywhere; }
+.akt-ic { display: grid; place-items: center; width: 30px; height: 30px; border-radius: 9px; background: var(--fox-soft); color: var(--fox); }
+.akt-ic .ic { width: 17px; height: 17px; }
+.akt-row.is-test .akt-ic { background: var(--sky-soft); color: var(--sky); }
+.akt-row.is-game .akt-ic { background: var(--good-soft); color: var(--good); }
+.akt-row.is-tal .akt-ic { background: var(--gold-soft); color: var(--near); }
+.akt-row.akt-none { display: block; font-size: 14px; font-weight: 600; color: var(--ink-3); }
+.akt-more { margin-top: 12px; }
+.akt-note { margin-top: 14px; }
+.akt-stand { display: flex; align-items: center; justify-content: space-between; gap: 8px 12px; flex-wrap: wrap; margin: 2px 0 14px; font-size: 14px; font-weight: 700; color: var(--ink-3); }
+.akt-stand > span { display: inline-flex; align-items: center; gap: 6px; }
+.akt-stand.is-old > span { color: var(--near-deep); }
+.akt-kpis .kpi { background: var(--card-2); border-color: transparent; }
+.akt-kpis .kpi b { font-size: 24px; overflow-wrap: anywhere; }
+
 @media (prefers-reduced-motion: reduce) {
   *, *::before, *::after { animation-duration: .001ms !important; animation-iteration-count: 1 !important; transition-duration: .001ms !important; scroll-behavior: auto !important; }
   .btn.is-auto::after { display: none; }
@@ -1725,7 +1766,7 @@ function fresh() {
     v: 1, t0: Date.now(), onb: false, rs: 0,
     set: { name: '', goal: 100, sfx: true, tts: true, spk: true, rate: 0.9, voice: '', m: 0, tal: true, tk: 60, td: 20, tm: 60, hat: '', scarf: '' },
     w: {}, days: {}, asg: {}, cur: '', curM: 0, tests: [], bdg: {}, st: {},
-    pair: { k: '', m: 0 }, req: { c: '', o: 0, n: 0, m: 0 }, red: [],
+    pair: { k: '', m: 0 }, req: { c: '', o: 0, n: 0, m: 0 }, red: [], log: [],
   };
 }
 let S = fresh();
@@ -1751,6 +1792,7 @@ function unpack(d) {
   for (const k of ['pair', 'req']) if (!isObj(s[k])) s[k] = fresh()[k];
   if (!Array.isArray(s.tests)) s.tests = [];
   if (!Array.isArray(s.red)) s.red = [];
+  if (!Array.isArray(s.log)) s.log = [];
   return s;
 }
 
@@ -1796,6 +1838,10 @@ function mergeState(a, b) {
   const red = new Map();
   for (const x of [...a.red, ...b.red]) red.set(x.id, x);
   r.red = [...red.values()].sort((x, y) => x.t - y.t).slice(-400);   // Kontostand rechnet mit dem Verlauf
+  // Aktivität für die Eltern (aktivitaet.js): vereint nach id
+  const log = new Map();
+  for (const x of [...a.log, ...b.log]) log.set(x.id, x);
+  r.log = [...log.values()].sort((x, y) => x.t - y.t).slice(-AKT_MAX);
   return r;
 }
 
@@ -3090,6 +3136,7 @@ function parentsHTML() {
   return `<div class="wrap">
     <div class="page-head"><h1>Für Eltern</h1><button class="btn btn-ghost btn-sm" type="button" data-act="par-lock">${icon('lock')}Sperren</button></div>
     ${fgCardHTML()}
+    ${aktRemoteHTML()}
     <div class="kpis">
       <div class="kpi"><span>Wörter gelernt</span><b>${wordsLearned()}</b><em>von ${started} begonnenen</em></div>
       <div class="kpi"><span>Lernzeit (7 Tage)</span><b>${min7} min</b><em>an ${plural(days7, 'Tag', 'Tagen')}</em></div>
@@ -3097,6 +3144,7 @@ function parentsHTML() {
       <div class="kpi"><span>Probetests</span><b>${tests.length}</b><em>${lastT ? `zuletzt Note ${lastT.g} (${lastT.p} %)` : 'noch keiner'}</em></div>
     </div>
     <div class="card"><div class="card-h"><h2>Lernzeit</h2><span class="kicker">letzte 14 Tage, Minuten</span></div><div class="chart">${chart}</div></div>
+    ${aktLocalHTML()}
     <div class="card"><div class="card-h"><h2>Aktuelle Aufgabe</h2></div>${asgCard}</div>
     <div class="card"><div class="card-h"><h2>Probetests</h2></div>${testRows
       ? `<div class="tbl-wrap"><table class="tbl"><thead><tr><th>Datum</th><th>Seiten</th><th>Wörter</th><th>Ergebnis</th><th>Note</th></tr></thead><tbody>${testRows}</tbody></table></div>`
@@ -3413,7 +3461,7 @@ async function sesQuit() {
     if (bz && SES.phase === 'q') { SES.end = performance.now() + SES.pause; SES.tick = setInterval(blitzTick, 200); }
     return;
   }
-  if (!test) { bump('s', Math.min(1800, Math.round((Date.now() - SES.t0) / 1000))); commit(); }
+  if (!test) { const d = Math.min(1800, Math.round((Date.now() - SES.t0) / 1000)); bump('s', d); aktSes(d, { q: 1 }); commit(); }
   closeSession();
 }
 
@@ -4081,6 +4129,7 @@ function finish() {
   if (perfect) statInc('perf');
   addXP(15 + (perfect ? 15 : 0));
   markDay();
+  aktSes(secs);
   commit();
   const acc = n ? Math.round(100 * (SES.ok + SES.near / 2) / n) : 100;
   $('#ses-body').innerHTML = resultHTML({
@@ -4264,6 +4313,7 @@ function blitzEnd() {
   statMax('blitz', SES.score);
   statMax('combo', SES.best);
   markDay();
+  aktSes(60);
   commit();
   const n = SES.ok + SES.bad;
   const missed = [...SES.missed.values()];
@@ -4382,6 +4432,7 @@ function testEnd() {
   const now = Date.now();
   SES.rec = { id: 't' + now, a: now, from: SES.a.from, to: SES.a.to, n: SES.items.length, p: 0, g: 6, m: now };
   S.tests.push(SES.rec);
+  aktTest(Math.min(3600, Math.round((now - SES.t0) / 1000)));
   testScore();
   renderTestRes(false);
   showEnd(SES.rec.g <= 4);
@@ -5343,6 +5394,7 @@ function snEnd() {
   const prev = S.st.snake || 0, rec = SN.score > prev;
   statMax('snake', SN.score);
   statInc('sng');
+  aktLog({ k: 'snake', sc: SN.score });
   commit();
   snDraw();
   snHud();
@@ -5544,6 +5596,7 @@ async function mgQuit() {
   } else if (MG.on === 'wk' && MG.phase === 'play') {
     const yes = await ask({ title: 'Wort aufgeben?', text: 'Der Taler für dieses Wort ist schon ausgegeben.', yes: 'Aufgeben', no: 'Weiterraten', art: fox('sad'), stay: true });
     if (!yes) return;
+    if (MG.on === 'wk' && MG.phase === 'play') { aktLog({ k: 'wk', w: WK.w, ok: 0, n: WK.rows.length }); commit(); }
   }
   mgClose();
 }
@@ -5716,7 +5769,10 @@ function wkEnter() {
 
 function wkEnd(win) {
   if (MG.on !== 'wk') return;
-  if (win) { statInc('wk'); commit(); confetti(70); }
+  if (win) statInc('wk');
+  aktLog({ k: 'wk', w: WK.w, ok: win ? 1 : 0, n: WK.rows.length });
+  commit();
+  if (win) confetti(70);
   sayWord(WK.word);
   const n = WK.rows.length;
   mgOver(`${fox(win ? 'happy' : 'sad')}
@@ -5920,6 +5976,7 @@ function fjEnd() {
   const prev = S.st.jump || 0, rec = FJ.score > prev;
   statMax('jump', FJ.score);
   statInc('jpg');
+  aktLog({ k: 'jump', sc: FJ.score });
   commit();
   fjDraw();
   fjHud();
@@ -6225,6 +6282,325 @@ ACT['bau-wear'] = el => {
   Sfx.play('tap');
   talRedraw();
 };
+</script>
+<script>
+/* Wortfuchs – Aktivität für die Eltern: Verlauf pro Runde (S.log) und Wochenrückblick im Eltern-Bereich.
+   Ist das Gerät mit einem Eltern-Handy gekoppelt (S.pair.k), geht derselbe Bericht verschlüsselt an die Zählstelle
+   auf Hostinger (POST /api/eltern); das Eltern-Handy holt ihn dort ab und zeigt ihn oben im Eltern-Bereich.
+   Schlüssel und Ablage-ID entstehen per PBKDF2 aus dem Kopplungs-Code – der Server sieht nur Zeichensalat.
+   Übertragen wird nur auf GitHub Pages und Hostinger (wie melden.js); Browser-Tests setzen window.WF_AKT. */
+'use strict';
+
+const AKT_MAX = 300, AKT_DAYS = 35, AKT_SEND_DAYS = 14;   // Verlauf im Spielstand: höchstens 300 Einträge, 35 Tage
+const AKT = {
+  url: window.WF_AKT || 'https://srv785719.hstgr.cloud/api/eltern',
+  days: 7,                     // so viele Tage zeigt der Verlauf (mehr per „Ältere Tage“)
+  tm: 0, sent: '', at: 0,      // Kindergerät: Sende-Timer, zuletzt gesendeter Inhalt und wann
+  kk: '', keys: null,          // Schlüssel und Ablage-ID zum Kopplungs-Code kk
+  rk: '', rem: null, n: 0,     // Eltern-Handy: Bericht vom Server (zu Code rk), aus n Geräten
+  st: '', got: 0,              // Zustand '' | load | none | err, zuletzt abgeholt
+};
+const aktNet = () => !!(window.crypto && crypto.subtle) && (!!window.WF_AKT || (MELD.hosts.includes(location.hostname) && !navigator.webdriver));
+const aktSendOn = () => aktNet() && !!S.pair.k && !parKey();
+
+// ======================= Aufzeichnen =======================
+// Eintrag: id, k Art, t Zeit; Übung: d Sekunden, n Antworten, p % richtig, xp, ln neu gelernt, sn Station, q abgebrochen;
+// Probetest: ti Test-id; Spiele: sc Punkte, w Wort, ok geknackt, n Versuche. Der Aufrufer ruft danach commit().
+function aktLog(o) {
+  const t = o.t || Date.now(), cut = Date.now() - AKT_DAYS * DAY;
+  S.log.push({ ...o, id: o.k + t.toString(36) + rnd(1296).toString(36), t });
+  S.log = S.log.filter(x => x.t > cut).slice(-AKT_MAX);
+  aktSoon();
+}
+// Übungsrunde am Ende oder beim Abbrechen (q: 1)
+function aktSes(d, x = {}) {
+  if (!SES) return;
+  const n = SES.ok + SES.near + SES.bad, k = learnedNow();
+  if (!n) return;
+  aktLog({ k: SES.kind, t: SES.t0, d, n, p: Math.round(100 * (SES.ok + SES.near / 2) / n), xp: SES.xp,
+    ...(SES.ln0 >= 0 && k > SES.ln0 ? { ln: k - SES.ln0 } : {}), ...(SES.st ? { sn: stationName(SES.st.i) } : {}), ...x });
+}
+const aktTest = d => aktLog({ k: 'test', t: SES.t0, d, n: SES.items.length, ti: SES.rec.id });
+
+// ======================= Bericht als Daten =======================
+// Am Kindergerät aus S, auf dem Eltern-Handy vom Server – beide Ansichten zeichnen daraus.
+const AKT_DF = ['xp', 's', 'a', 'ok', 'l', 'sp', 'c'];
+function aktSnap(nd) {
+  const t = today(), from = t - nd + 1, a = curAsg(), st = streakInfo(), inf = a ? poolInfo(a) : null;
+  const days = {};
+  for (let k = from; k <= t; k++) {
+    const r = S.days[dayKey(k)];
+    if (r) days[dayKey(k)] = Object.fromEntries(AKT_DF.filter(f => r[f]).map(f => [f, r[f]]));
+  }
+  const inRange = x => dayNum(new Date(x.t)) >= from;
+  const tests = new Map(S.tests.map(x => [x.id, x]));
+  const log = S.log.filter(inRange).map(x => {
+    const r = x.k === 'test' && tests.get(x.ti);
+    return r ? { ...x, p: r.p, nt: r.g } : x;
+  });
+  for (const x of S.red.filter(inRange)) {
+    log.push(x.k === 'b' ? { id: x.id, k: 'bau', t: x.t, b: (BAU_BY[x.b] || {}).n || '', min: x.min } : { id: x.id, k: x.k ? 'unl' : 'red', t: x.t, min: x.min });
+  }
+  log.sort((x, y) => x.t - y.t);
+  return {
+    v: 1, at: Date.now(), name: S.set.name || '', gel: wordsLearned(), serie: st.n, best: st.best,
+    tal: talOn() ? talBalance() : -1,
+    asg: a ? { f: a.from, t: a.to, test: a.test || '', n: inf.pool.length, ln: inf.counts[2] + inf.counts[3] } : null,
+    first: S.log.length ? S.log[0].t : 0,   // seit wann es Einzelheiten gibt
+    days, log,
+  };
+}
+
+// Mehrere Kindergeräte (ohne gemeinsamen Spielstand): Tage addieren, Verlauf vereinen, Rest vom neuesten
+function aktMerge(list) {
+  list.sort((x, y) => y.at - x.at);
+  const r = { ...list[0], days: {}, log: [], tal: -1 };
+  const log = new Map();
+  for (const d of list) {
+    for (const [k, v] of Object.entries(d.days)) {
+      const t = r.days[k] || (r.days[k] = {});
+      for (const f of AKT_DF) if (v[f]) t[f] = (t[f] || 0) + (+v[f] || 0);
+    }
+    for (const x of d.log) log.set(x.id, x);
+    for (const f of ['gel', 'serie', 'best']) r[f] = Math.max(r[f] || 0, +d[f] || 0);
+    if (d.tal >= 0) r.tal = Math.max(0, r.tal) + d.tal;
+    if (d.first && (!r.first || d.first < r.first)) r.first = d.first;
+  }
+  r.log = [...log.values()].sort((x, y) => x.t - y.t);
+  return r;
+}
+
+// ======================= Ansicht =======================
+const AKT_KIND = {
+  lesson: ['route', 'Neue Station', 'learn'], replay: ['repeat', 'Station wiederholt', 'learn'], review: ['repeat', 'Wiederholen', 'learn'],
+  strengthen: ['target', 'Festigen', 'learn'], oops: ['lightbulb', 'Fehler-Training', 'learn'], blitz: ['zap', 'Blitz-Runde', 'learn'],
+  test: ['flag', 'Probetest', 'test'], snake: ['gamepad', 'Wort-Snake', 'game'], wk: ['gamepad', 'Wortknacker', 'game'], jump: ['gamepad', 'Fuchs-Sprung', 'game'],
+  red: ['clock', 'Bildschirmzeit eingelöst', 'tal'], unl: ['lock', 'Einstellungen entsperrt', 'tal'], bau: ['coin', 'Fuchsbau', 'tal'],
+};
+const aktNum = v => Math.max(0, Math.round(+v || 0));
+const aktMin = s => `${s && s < 60 ? '<1' : fmtN(aktNum(s) / 60)} min`;
+const aktDayName = k => k === today() ? 'Heute' : k === today() - 1 ? 'Gestern' : fmtDay(k, { weekday: 'long', day: 'numeric', month: 'short' });
+
+function aktLine(x) {
+  const [ic, name, grp] = AKT_KIND[x.k] || ['star', 'Aktivität', 'learn'];
+  let title = name, info = [];
+  if (grp === 'learn') {
+    if (x.sn) title += ` „${x.sn}“`;
+    info = [aktMin(x.d), plural(aktNum(x.n), 'Antwort', 'Antworten'), `${aktNum(x.p)} % richtig`, x.xp ? `+${fmtN(aktNum(x.xp))} XP` : '', x.ln ? `+${aktNum(x.ln)} gelernt` : '', x.q ? 'abgebrochen' : ''];
+  } else if (x.k === 'test') {
+    if (x.nt) title += ` · Note ${aktNum(x.nt)}`;
+    info = [aktMin(x.d), plural(aktNum(x.n), 'Wort', 'Wörter'), x.p != null ? `${aktNum(x.p)} %` : ''];
+  } else if (x.k === 'wk') {
+    info = [`„${x.w || '?'}“ ${x.ok ? `geknackt (${plural(aktNum(x.n), 'Versuch', 'Versuche')})` : 'nicht geknackt'}`];
+  } else if (grp === 'game') {
+    info = [plural(aktNum(x.sc), 'Punkt', 'Punkte')];
+  } else if (x.k === 'red') {
+    info = [`${aktNum(x.min)} min`];
+  } else if (x.k === 'bau') {
+    title += x.b ? `: ${x.b}` : '';
+    info = [plural(aktNum(x.min), 'Taler', 'Taler')];
+  }
+  return `<li class="akt-row is-${grp}"><time>${clockOf(+x.t || 0)}</time><span class="akt-ic">${icon(ic)}</span>
+    <div><b>${esc(title)}</b>${info.filter(Boolean).length ? `<small>${esc(info.filter(Boolean).join(' · '))}</small>` : ''}</div></li>`;
+}
+
+// Zwei Wochen nebeneinander: die letzten 7 Tage und die 7 davor
+function aktWeekHTML(d) {
+  const t = today(), firstDay = d.first ? dayNum(new Date(d.first)) : Infinity;
+  const wk = off => {
+    const o = { s: 0, xp: 0, a: 0, ok: 0, l: 0, sp: 0, dd: 0, ln: 0, min: 0 }, lo = t - off - 6, hi = t - off;
+    for (let k = lo; k <= hi; k++) {
+      const r = d.days[dayKey(k)];
+      if (!r) continue;
+      for (const f of ['s', 'xp', 'a', 'ok', 'l', 'sp']) o[f] += aktNum(r[f]);
+      if (r.s || r.xp) o.dd++;
+    }
+    for (const x of d.log) {
+      const k = dayNum(new Date(x.t));
+      if (k < lo || k > hi) continue;
+      o.ln += aktNum(x.ln);
+      if (x.k === 'red') o.min += aktNum(x.min);
+    }
+    o.det = firstDay <= hi || !o.dd;   // gibt es für diese Woche Einzelheiten (neu gelernt)? Sonst „–“
+    return o;
+  };
+  const a = wk(0), b = wk(7);
+  const pct = x => x.a ? Math.round(100 * x.ok / x.a) : null;
+  // [Name, Wert, Einheit, wertend?]
+  const rows = [
+    ['Lernzeit', x => Math.round(x.s / 60), ' min', true],
+    ['Lerntage', x => x.dd, '', true],
+    ['Runden', x => x.l, '', true],
+    ['Antworten', x => x.a, '', true],
+    ['Richtig', pct, ' %', true],
+    ['Neu gelernt', x => x.det ? x.ln : null, '', true],
+    ['XP', x => x.xp, '', true],
+  ];
+  if (d.tal >= 0 || a.sp + b.sp + a.min + b.min) rows.push(['Spielrunden', x => x.sp, '', false], ['Bildschirmzeit', x => x.min, ' min', false]);
+  const cell = (v, u) => v == null ? '–' : fmtN(v) + u;
+  const body = rows.map(([n, f, u, judge]) => {
+    const v = f(a), w = f(b), dv = v != null && w != null ? v - w : null;
+    const chip = dv == null || !(v || w) ? '' : `<em class="akt-d${judge && dv ? (dv > 0 ? ' is-up' : ' is-down') : ''}">${dv > 0 ? '+' : dv < 0 ? '−' : '±'}${fmtN(Math.abs(dv))}</em>`;
+    return `<div class="akt-wk-row"><span>${n}</span><b>${cell(v, u)}</b><span>${chip}</span><span class="muted">${cell(w, u)}</span></div>`;
+  }).join('');
+  const m0 = Math.round(a.s / 60), m1 = Math.round(b.s / 60), dm = m0 - m1;
+  const lead = !m0 && !m1 ? 'In den letzten 14 Tagen wurde nicht gelernt.'
+    : `<b>${m0} min</b> an ${plural(a.dd, 'Tag', 'Tagen')} gelernt${!m1 ? '.' : dm >= 5 ? ` – ${dm} min mehr als davor.` : dm <= -5 ? ` – ${-dm} min weniger als davor.` : ' – etwa so viel wie davor.'}`;
+  return `<div class="card akt-week"><div class="card-h"><h2>Wochenrückblick</h2></div>
+    <p class="akt-lead">${lead}</p>
+    <div class="akt-wk"><div class="akt-wk-row akt-wk-h"><span></span><span>7 Tage</span><span></span><span>Davor</span></div>${body}</div></div>`;
+}
+
+function aktLogHTML(d, range, note) {
+  const t = today(), firstDay = d.first ? dayNum(new Date(d.first)) : Infinity, by = new Map();
+  for (const x of d.log) {
+    const k = dayNum(new Date(x.t));
+    if (!by.has(k)) by.set(k, []);
+    by.get(k).push(x);
+  }
+  const act = k => { const r = d.days[dayKey(k)] || {}; return by.has(k) || r.s || r.xp; };
+  let out = '', more = false;
+  for (let k = t; k > t - range; k--) {
+    if (!act(k)) continue;
+    if (k <= t - AKT.days) { more = true; break; }
+    const r = d.days[dayKey(k)] || {}, list = (by.get(k) || []).slice().reverse();
+    const sumTxt = [r.s ? aktMin(r.s) : '', r.xp ? `${fmtN(aktNum(r.xp))} XP` : ''].filter(Boolean).join(' · ');
+    out += `<li class="akt-day"><div class="akt-day-h"><b>${aktDayName(k)}</b>${sumTxt ? `<span>${sumTxt}</span>` : ''}</div>
+      <ul>${list.map(aktLine).join('') || `<li class="akt-row akt-none">${k < firstDay ? 'Einzelheiten gibt es erst ab ' + fmtDay(firstDay === Infinity ? t : firstDay) : 'Keine Einzelheiten'}</li>`}</ul></li>`;
+  }
+  return `<div class="card akt-log"><div class="card-h"><h2>Verlauf</h2></div>
+    ${out ? `<ul class="akt-days">${out}</ul>` : '<p class="muted">Noch keine Aktivität.</p>'}
+    ${more ? '<button class="btn btn-ghost btn-sm akt-more" type="button" data-act="akt-more">Ältere Tage</button>' : ''}
+    ${note ? `<p class="store-note akt-note">${note}</p>` : ''}</div>`;
+}
+
+// Kindergerät: unter „Lernzeit“
+function aktNote() {
+  if (!S.pair.k) return `${icon('smartphone')}<span>Mit gekoppeltem Eltern-Handy sehen Sie das auch dort (unten bei „Fuchstaler einrichten“).</span>`;
+  return `${icon('smartphone')}<span>Wird verschlüsselt an Ihr Eltern-Handy übertragen${aktNet() ? '' : ' – nur über die Internet-Adresse von Wortfuchs, nicht im claude.ai-Viewer'}.</span>`;
+}
+const aktLocalInner = () => { const d = aktSnap(AKT_DAYS); return aktWeekHTML(d) + aktLogHTML(d, AKT_DAYS, aktNote()); };
+function aktLocalHTML() {
+  if (parKey() && !S.log.length) return '';   // Eltern-Handy: eigener Verlauf nur, wenn hier gespielt wurde
+  return `<div class="akt" id="akt-local">${aktLocalInner()}</div>`;
+}
+
+// Eltern-Handy: ganz oben, darunter „Auf diesem Handy“
+function aktRemoteHTML() {
+  const K = parKey();
+  if (!K) return '';
+  if (AKT.rk !== K) Object.assign(AKT, { rk: K, rem: null, n: 0, st: '', got: 0 });
+  if (aktNet() && AKT.st !== 'load' && Date.now() - AKT.got > 60e3) aktFetch(K);
+  return `<div class="akt akt-remote" id="akt-remote">${aktRemoteInner()}</div><div class="section-title"><h2>Auf diesem Handy</h2></div>`;
+}
+function aktRemoteInner() {
+  const d = AKT.rem, load = AKT.st === 'load';
+  const btn = `<button class="btn btn-ghost btn-sm" type="button" data-act="akt-load"${load ? ' aria-busy="true"' : ''}>${icon('repeat')}${load ? 'Lädt …' : 'Aktualisieren'}</button>`;
+  const card = (h, body) => `<div class="card akt-kid"><div class="card-h"><h2>${h}</h2><span class="kicker">Ihr Kind</span></div>${body}</div>`;
+  if (!aktNet()) return card('Aktivität', '<p class="muted">Die Aktivität Ihres Kindes erscheint hier nur über die Internet-Adresse von Wortfuchs – nicht im claude.ai-Viewer und nicht als Datei.</p>');
+  if (!d) {
+    const txt = load ? 'Wird geladen …'
+      : AKT.st === 'err' ? 'Der Server ist gerade nicht erreichbar. Bitte später noch einmal versuchen.'
+      : 'Noch kein Bericht da. Er kommt, sobald das Gerät Ihres Kindes mit diesem Handy gekoppelt ist (dort: Eltern → Fuchstaler einrichten → Kopplungs-Code) und Wortfuchs dort über die Internet-Adresse geöffnet wird.';
+    return card('Aktivität', `<p class="muted">${txt}</p>${load ? '' : btn}`);
+  }
+  const at = +d.at || 0, ak = dayNum(new Date(at)), old = Date.now() - at > 2 * DAY;
+  const stand = `${ak === today() ? 'heute' : ak === today() - 1 ? 'gestern' : fmtDay(ak)}, ${clockOf(at)}`;
+  const a = isObj(d.asg) ? d.asg : null;
+  const kpis = `<div class="kpis akt-kpis">
+    ${a ? `<div class="kpi"><span>Aufgabe gelernt</span><b>${aktNum(a.ln)} / ${aktNum(a.n)}</b><em>S. ${aktNum(a.f)}${a.t !== a.f ? '–' + aktNum(a.t) : ''}${/^\d{4}-\d\d-\d\d$/.test(a.test) ? ` · Test ${fmtDay(keyNum(a.test))}` : ''}</em></div>` : ''}
+    <div class="kpi"><span>Wörter gelernt</span><b>${fmtN(aktNum(d.gel))}</b><em>insgesamt</em></div>
+    <div class="kpi"><span>Serie</span><b>${plural(aktNum(d.serie), 'Tag', 'Tage')}</b><em>Rekord: ${aktNum(d.best)}</em></div>
+    ${d.tal >= 0 ? `<div class="kpi"><span>Fuchstaler</span><b>${fmtN(aktNum(d.tal))}</b><em>auf dem Konto</em></div>` : ''}</div>`;
+  const status = `<div class="akt-stand${old ? ' is-old' : ''}"><span>${icon('clock')}Stand: ${stand}${AKT.n > 1 ? ` · ${AKT.n} Geräte` : ''}${AKT.st === 'err' ? ' · Server gerade nicht erreichbar' : ''}</span>${btn}</div>`;
+  return card(esc(d.name || 'Aktivität'), status + kpis) + aktWeekHTML(d) + aktLogHTML(d, AKT_SEND_DAYS, '');
+}
+
+function aktRedraw() {
+  const r = $('#akt-remote');
+  if (r) r.innerHTML = aktRemoteInner();
+  const l = $('#akt-local');
+  if (l) l.innerHTML = aktLocalInner();
+}
+ACT['akt-more'] = () => { AKT.days += 7; aktRedraw(); };
+ACT['akt-load'] = () => {
+  const K = parKey();
+  if (!K || AKT.st === 'load') return;
+  aktFetch(K);
+  aktRedraw();
+};
+
+// ======================= Verschlüsselt übertragen =======================
+function aktB64(u8) {
+  let s = '';
+  for (let i = 0; i < u8.length; i += 8192) s += String.fromCharCode.apply(null, u8.subarray(i, i + 8192));
+  return btoa(s);
+}
+const aktUnB64 = s => Uint8Array.from(atob(s), c => c.charCodeAt(0));
+
+// Kopplungs-Code → AES-GCM-Schlüssel + Ablage-ID (PBKDF2, damit sich der Code nicht durchprobieren lässt)
+async function aktKeys(K) {
+  if (AKT.kk === K && AKT.keys) return AKT.keys;
+  const enc = new TextEncoder();
+  const base = await crypto.subtle.importKey('raw', enc.encode(K), 'PBKDF2', false, ['deriveBits']);
+  const bits = new Uint8Array(await crypto.subtle.deriveBits({ name: 'PBKDF2', hash: 'SHA-256', salt: enc.encode('wortfuchs-eltern-v1'), iterations: 150000 }, base, 384));
+  const key = await crypto.subtle.importKey('raw', bits.slice(0, 32), 'AES-GCM', false, ['encrypt', 'decrypt']);
+  const id = [...bits.slice(32)].map(b => b.toString(16).padStart(2, '0')).join('');
+  AKT.kk = K;
+  AKT.keys = { key, id };
+  return AKT.keys;
+}
+
+// Kindergerät: nach jeder Runde (5 s später), alle 5 Minuten und beim Verlassen – nur wenn sich etwas geändert hat
+function aktSoon() {
+  if (!aktSendOn()) return;
+  clearTimeout(AKT.tm);
+  AKT.tm = setTimeout(() => aktSend(false), 5000);
+}
+async function aktSend(leaving) {
+  if (!aktSendOn()) return;
+  const K = S.pair.k, snap = aktSnap(AKT_SEND_DAYS), now = Date.now();
+  const same = K + JSON.stringify({ ...snap, at: 0 });
+  if (same === AKT.sent && now - AKT.at < (leaving ? 5 : 30) * 60e3) return;
+  AKT.sent = same;
+  AKT.at = now;
+  try {
+    const { key, id } = await aktKeys(K);
+    const iv = crypto.getRandomValues(new Uint8Array(12));
+    const c = new Uint8Array(await crypto.subtle.encrypt({ name: 'AES-GCM', iv }, key, new TextEncoder().encode(JSON.stringify(snap))));
+    const dev = talHash(meldId() + '|' + K).toString(36);   // Gerät, damit sich zwei Kindergeräte nicht überschreiben
+    const body = JSON.stringify({ id, dev, iv: aktB64(iv), c: aktB64(c) });
+    await fetch(AKT.url, { method: 'POST', body, mode: 'no-cors', credentials: 'omit', keepalive: body.length < 60000 });
+  } catch (e) { AKT.sent = ''; }   // offline oder gesperrt – beim nächsten Mal wieder
+}
+
+// Eltern-Handy: Berichte aller Kindergeräte abholen und entschlüsseln
+async function aktFetch(K) {
+  AKT.st = 'load';
+  try {
+    const { key, id } = await aktKeys(K);
+    const r = await fetch(`${AKT.url}?id=${id}`, { credentials: 'omit', cache: 'no-store' });
+    if (r.status === 404) Object.assign(AKT, { rem: null, n: 0, st: 'none' });
+    else {
+      if (!r.ok) throw new Error(r.status);
+      const j = await r.json(), list = [];
+      for (const g of Array.isArray(j.g) ? j.g : []) {
+        try {
+          const p = await crypto.subtle.decrypt({ name: 'AES-GCM', iv: aktUnB64(g.iv) }, key, aktUnB64(g.c));
+          const d = JSON.parse(new TextDecoder().decode(p));
+          if (isObj(d) && d.v === 1 && isObj(d.days) && Array.isArray(d.log)) list.push(d);
+        } catch (e) { /* alter Schlüssel oder kaputt – überspringen */ }
+      }
+      if (!list.length) Object.assign(AKT, { rem: null, n: 0, st: 'none' });
+      else Object.assign(AKT, { rem: aktMerge(list), n: list.length, st: '' });
+    }
+  } catch (e) { AKT.st = 'err'; }
+  if (AKT.rk === K) { AKT.got = Date.now(); aktRedraw(); }
+}
+
+setTimeout(() => aktSend(false), 6000);
+setInterval(() => { if (document.visibilityState === 'visible') aktSend(false); }, 5 * 60e3);
+document.addEventListener('visibilitychange', () => { if (document.visibilityState === 'hidden') aktSend(true); });
 </script>
 <script>
 /* Wortfuchs – Start: Spielstand laden, Tastatur, Speichern im Konto. */
