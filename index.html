@@ -6300,7 +6300,7 @@ const AKT = {
   rk: '', rem: null, n: 0,     // Eltern-Handy: Bericht vom Server (zu Code rk), aus n Geräten
   st: '', got: 0,              // Zustand '' | load | none | err, zuletzt abgeholt
 };
-const aktNet = () => !!(window.crypto && crypto.subtle) && (!!window.WF_AKT || (MELD.hosts.includes(location.hostname) && !navigator.webdriver));
+const aktNet = () => !!(window.crypto && crypto.subtle) && (!!window.WF_AKT || (typeof MELD === 'object' && MELD.hosts.includes(location.hostname) && !navigator.webdriver));   // MELD fehlt in Fassungen ohne melden.js
 const aktSendOn = () => aktNet() && !!S.pair.k && !parKey();
 
 // ======================= Aufzeichnen =======================
@@ -6568,7 +6568,7 @@ async function aktSend(leaving) {
     const { key, id } = await aktKeys(K);
     const iv = crypto.getRandomValues(new Uint8Array(12));
     const c = new Uint8Array(await crypto.subtle.encrypt({ name: 'AES-GCM', iv }, key, new TextEncoder().encode(JSON.stringify(snap))));
-    const dev = talHash(meldId() + '|' + K).toString(36);   // Gerät, damit sich zwei Kindergeräte nicht überschreiben
+    const dev = talHash((typeof meldId === 'function' ? meldId() : '') + '|' + K).toString(36);   // Gerät, damit sich zwei Kindergeräte nicht überschreiben
     const body = JSON.stringify({ id, dev, iv: aktB64(iv), c: aktB64(c) });
     await fetch(AKT.url, { method: 'POST', body, mode: 'no-cors', credentials: 'omit', keepalive: body.length < 60000 });
   } catch (e) { AKT.sent = ''; }   // offline oder gesperrt – beim nächsten Mal wieder
