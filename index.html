@@ -5423,5 +5423,73 @@ function boot() {
 boot();
 </script>
 
+<script>
+/* Wortfuchs – Nutzer-Statistik: meldet Vorname, Gerät und Lernstand an die Zählstelle auf Hostinger.
+   Der Admin sieht die Liste unter https://srv785719.hstgr.cloud/admin (PIN). Server: werkstatt/hostinger/api/.
+   Gemeldet wird nur auf GitHub Pages und Hostinger – lokal (file://), im claude.ai-Viewer und in Browser-Tests
+   (navigator.webdriver, auch bei WF_URL gegen das Live-Spiel) nie. */
+'use strict';
+
+const MELD = {
+  url: 'https://srv785719.hstgr.cloud/api/ping',
+  hosts: ['q202076-ops.github.io', 'srv785719.hstgr.cloud'],
+  key: 'wortfuchs.geraet',   // zufällige Geräte-ID, getrennt vom Spielstand (bleibt beim Zurücksetzen)
+  sent: '',                  // zuletzt gemeldeter Inhalt
+  at: 0,                     // und wann
+};
+
+function meldId() {
+  try {
+    let id = localStorage.getItem(MELD.key);
+    if (!/^[a-f0-9]{32}$/.test(id || '')) {
+      id = Array.from(crypto.getRandomValues(new Uint8Array(16)), b => b.toString(16).padStart(2, '0')).join('');
+      localStorage.setItem(MELD.key, id);
+    }
+    return id;
+  } catch (e) { return ''; }   // ohne Speicher keine Meldung – sonst zählte jeder Neustart als neuer Nutzer
+}
+
+// „iPad · Safari“
+function meldDev() {
+  const ua = navigator.userAgent;
+  const os = /iPad/.test(ua) || (/Macintosh/.test(ua) && navigator.maxTouchPoints > 1) ? 'iPad'
+    : /iPhone/.test(ua) ? 'iPhone'
+    : /Android/.test(ua) ? (/Mobile/.test(ua) ? 'Android-Handy' : 'Android-Tablet')
+    : /CrOS/.test(ua) ? 'Chromebook' : /Windows/.test(ua) ? 'Windows' : /Mac OS X/.test(ua) ? 'Mac' : /Linux/.test(ua) ? 'Linux' : 'Gerät';
+  const br = /Edg/.test(ua) ? 'Edge' : /Firefox|FxiOS/.test(ua) ? 'Firefox' : /Chrome|CriOS/.test(ua) ? 'Chrome' : /Safari/.test(ua) ? 'Safari' : '';
+  return br ? `${os} · ${br}` : os;
+}
+
+function meldData() {
+  const a = curAsg(), inf = a ? poolInfo(a) : null;
+  return {
+    name: S.set.name || '', dev: meldDev(),
+    xp: totalXP(), heute: todayXP(), lvl: levelInfo().L, serie: streakInfo().n,
+    gelernt: inf ? inf.counts[2] + inf.counts[3] : 0, pool: inf ? inf.pool.length : 0, gesamt: wordsLearned(),
+    seiten: a ? (a.from === a.to ? `${a.from}` : `${a.from}–${a.to}`) : '', test: (a && a.test) || '',
+  };
+}
+
+// Unveränderter Stand: höchstens alle 30 Minuten, beim Verlassen alle 5 Minuten (für „zuletzt aktiv“)
+function meldSend(leaving) {
+  const id = meldId();
+  if (!id) return;
+  let body;
+  try { body = JSON.stringify({ id, ...meldData() }); } catch (e) { return; }
+  const now = Date.now();
+  if (body === MELD.sent && now - MELD.at < (leaving ? 5 : 30) * 60e3) return;
+  MELD.sent = body;
+  MELD.at = now;
+  try {
+    fetch(MELD.url, { method: 'POST', body, mode: 'no-cors', credentials: 'omit', keepalive: true }).catch(() => {});
+  } catch (e) { /* offline oder gesperrt – egal */ }
+}
+
+if (MELD.hosts.includes(location.hostname) && !navigator.webdriver) {
+  setTimeout(() => meldSend(false), 4000);
+  setInterval(() => { if (document.visibilityState === 'visible') meldSend(false); }, 5 * 60e3);
+  document.addEventListener('visibilitychange', () => { if (document.visibilityState === 'hidden') meldSend(true); });
+}
+</script>
 </body>
 </html>
