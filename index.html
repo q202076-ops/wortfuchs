@@ -422,6 +422,8 @@ p { margin: 0; }
 .line-more button { justify-self: start; }
 .stop.is-final .stop-dot { border-radius: 18px; border-color: var(--ink); color: var(--ink); box-shadow: 0 4px 0 color-mix(in srgb, var(--ink) 60%, transparent); }
 .stop.is-final.is-open .stop-dot { background: var(--ink); color: var(--paper); }
+.stop.is-next::before { top: -10px; bottom: 50%; width: 0; margin-left: -2px; background: none; border-left: 4px dotted var(--c); }
+.stop.is-next .stop-go { margin-top: 8px; }
 
 /* ---------- Wörter ---------- */
 .page-head { display: flex; align-items: center; justify-content: space-between; gap: 12px; flex-wrap: wrap; margin: 4px 2px 16px; }
@@ -974,6 +976,7 @@ body.ses-open { overflow: hidden; }
 .t-card p { margin: 0; }
 .grade-hero .lead { color: var(--ink-2); font-weight: 500; margin-top: 6px; }
 .grade-hero + .goalbar { margin-top: 20px; }
+.t-next { margin-top: 16px; }
 .ses-body:focus { outline: none; }
 
 /* ---------- Sprechen (sprechen.js) ---------- */
@@ -2699,7 +2702,7 @@ VIEWS.home = () => {
   const info = poolInfo(a);
   const st = stationsOf(a);
   el.innerHTML = `<div class="wrap">${greetHTML(a, info)}
-    <div class="home-grid">${heroHTML(a, info, st)}${lineHTML(st)}${modesHTML(info)}</div></div>`;
+    <div class="home-grid">${heroHTML(a, info, st)}${lineHTML(st, a)}${modesHTML(info)}</div></div>`;
 };
 
 function greetHTML(a, info) {
@@ -2729,7 +2732,7 @@ function heroHTML(a, info, st) {
     ${learnedHTML(c2 + c3, n)}
     <div class="lvbar" aria-hidden="true"><i class="l4" style="width:${pc(c2 + c3)}"></i></div>
     ${testHTML(a, info)}
-    ${ctaHTML(info, st)}
+    ${ctaHTML(a, info, st)}
   </section>`;
 }
 
@@ -2763,11 +2766,18 @@ function planText(info) {
   return `${introToday && newToday ? 'Heute noch' : 'Heute'}: ${parts.join(' und ')}${tail}`;
 }
 
-function ctaHTML(info, st) {
+function ctaHTML(a, info, st) {
   const cur = st.find(s => s.status === 'current');
+  const rest = info.counts[0] + info.counts[1];
   const btn = (attrs, label, sub) => `<button class="btn btn-primary btn-block" type="button" ${attrs}>${label}${sub ? `<small class="cta-sub">${sub}</small>` : ''}${icon('arrow-right')}</button>`;
-  if (info.dl !== null && info.dl < 0) return btn('data-go="picker"', 'Neue Seiten wählen');
+  if (info.dl !== null && info.dl < 0) {
+    const nx = asgNext(a);
+    return nx ? btn('data-act="asg-next"', 'Weiter', rangeTxt(nx)) : btn('data-go="picker"', 'Neue Seiten wählen');
+  }
   if (cur && info.newToday > 0) return btn(`data-act="stop" data-i="${cur.i}"`, 'Weiterlernen', esc(stationName(cur.i)));
+  if (!cur && rest > 0) return btn('data-act="rest"', 'Rest lernen', plural(rest, 'Wort', 'Wörter'));
+  const nx = !cur && asgFree(a) && asgNext(a);
+  if (nx) return btn('data-act="asg-next"', 'Weiter', rangeTxt(nx));
   if (info.due > 0) return btn('data-act="review"', 'Wiederholen', plural(info.due, 'Wort', 'Wörter'));
   if (cur) return btn(`data-act="stop" data-i="${cur.i}"`, 'Weiterlernen', 'Bonus');
   if (info.ready < 0.9) return btn('data-act="strengthen"', 'Festigen');
@@ -2790,7 +2800,7 @@ function modesHTML(info) {
 }
 
 // ---------- Die Linie ----------
-function lineHTML(st) {
+function lineHTML(st, a) {
   const n = st.length;
   if (!n) return '';
   const curS = st.find(s => s.status === 'current');
@@ -2811,6 +2821,7 @@ function lineHTML(st) {
   }
   if (hi < n - 1) items.push(lineMoreHTML(n - 1 - hi, st[hi].unit, 'down'));
   items.push(finalHTML(st));
+  items.push(nextHTML(a));
   const done = st.filter(s => s.done).length;
   return `<section class="card line-card" aria-label="Deine Linie">
     <div class="line-head"><h2>Stationen</h2><span class="kicker">${done} / ${n}</span></div>
@@ -2849,6 +2860,19 @@ function finalHTML(st) {
   return `<li class="stop is-final is-last${all ? ' is-open' : ''}" style="--c:${UNITS[st[st.length - 1].unit].c}">
     <button class="stop-dot" type="button" data-act="test-setup" aria-label="Endstation: Probetest">${icon('flag')}</button>
     <div class="stop-info"><b>Probetest</b></div></li>`;
+}
+
+// Unter dem Probetest: die nächsten Seiten – frei nach dem Probetest, dann mit einem Tipp übernommen
+function nextHTML(a) {
+  const nx = asgNext(a);
+  if (!nx) return '';
+  const us = unitsOf(poolOf(nx));
+  const free = asgFree(a);
+  return `<li class="stop is-next${free ? '' : ' is-locked'}" style="--c:${us.length ? UNITS[us[0]].c : 'var(--fox)'}">
+    <button class="stop-dot" type="button" data-act="asg-next" aria-label="${esc(`${rangeTxt(nx)}: ${free ? 'weiter' : 'frei nach dem Probetest'}`)}">${icon(free ? 'book-open' : 'lock')}</button>
+    <div class="stop-info"><b>${rangeTxt(nx)}</b>
+      ${free ? `<div class="stop-go"><button class="btn btn-primary btn-sm" type="button" data-act="asg-next">Weiter ${icon('arrow-right')}</button></div>` : ''}
+    </div></li>`;
 }
 
 ACT['line-open'] = () => { lineOpen = !lineOpen; VIEWS.home(false); };
@@ -3003,6 +3027,37 @@ ACT['asg-pick'] = el => {
   lineOpen = false;
   commit();
   go('home');
+};
+// Die nächsten Seiten nach einer Aufgabe: gleich viele, Seiten ohne Wörter überspringen
+function asgNext(a) {
+  if (!a) return null;
+  const len = a.to - a.from + 1;
+  for (let from = a.to + 1; from <= PAGES.max; from++) {
+    const to = Math.min(PAGES.max, from + len - 1);
+    const r = rangeInfo(from, to, a.box, false);
+    if (r.n || r.plusExt) return { from, to, box: a.box, ext: !!a.ext || !r.n };
+  }
+  return null;
+}
+// Frei sind die nächsten Seiten nach einem Probetest auf diesen Seiten oder nach dem Testtag
+const asgFree = a => !!a && (S.tests.some(t => t.from === a.from && t.to === a.to) || (!!a.test && keyNum(a.test) < today()));
+ACT['asg-next'] = () => {
+  const a = curAsg();
+  const nx = asgNext(a);
+  if (!nx) return;
+  if (!asgFree(a)) { toast(`${icon('lock')} Mach erst den Probetest!`); Sfx.play('near'); return; }
+  if (SES) { if (SES.kind !== 'test' || SES.phase !== 'end') return; closeSession(); }
+  const id = asgId(nx.from, nx.to);
+  const now = Date.now();
+  const old = S.asg[id];
+  S.asg[id] = old && !old.del ? { ...old, m: now } : { id, ...nx, test: '', c: now, m: now };
+  S.cur = id;
+  S.curM = now;
+  lineOpen = false;
+  commit();
+  Sfx.play('start');
+  go('home');
+  toast(`${icon('book-open')} ${rangeTxt(nx)}`);
 };
 ACT['asg-del'] = async el => {
   const a = S.asg[el.dataset.id];
@@ -4342,6 +4397,13 @@ ACT.strengthen = () => {
   if (!list.length) { toast('Lern erst eine Station – dann kannst du festigen.'); Sfx.play('near'); return; }
   startSession('strengthen', { words: list });
 };
+// „Rest lernen“: alle noch nicht gelernten Wörter (Box < 3), 10 pro Runde in Buchreihenfolge
+ACT.rest = () => {
+  if (SES) return;
+  const list = sesPool().filter(w => lvl(w) < 3).slice(0, 10);
+  if (!list.length) { toast(`${icon('sparkles')} Alle Wörter gelernt!`); Sfx.play('near'); return; }
+  startSession('strengthen', { words: list });
+};
 ACT.oops = () => {
   if (SES) return;
   const list = oopsWords(sesPool());
@@ -4583,7 +4645,7 @@ function testButtons() {
   setGo(`Fertig ${icon('check')}`);
 }
 function renderTestRes(keep) {
-  const items = SES.items, n = items.length, g = SES.rec.g;
+  const items = SES.items, n = items.length, g = SES.rec.g, nx = asgNext(SES.a);
   const sc = $('#ses-scroll').scrollTop;
   const rows = items.map((it, k) => {
     const w = it.w, en = it.dir === 'en';
@@ -4607,6 +4669,7 @@ function renderTestRes(keep) {
       <p class="lead">${String(SES.pts).replace('.', ',')} von ${n} Punkten · ${SES.rec.p} % · +${fmtN(SES.txp)} XP</p>
       ${g >= 4 ? "<p class=\"lead\">Üb die roten Wörter nochmal – dann klappt's im echten Test!</p>" : ''}
     </div>
+    ${nx ? `<button class="btn btn-ghost btn-block t-next" type="button" data-act="asg-next">${icon('book-open')}${rangeTxt(nx)}${icon('arrow-right')}</button>` : ''}
     ${talGainHTML()}${goalHTML(SES.xp0)}
     <div class="section-title"><h2>Deine Antworten</h2><span class="kicker">${items.filter(it => it.pts === 1).length} von ${n} richtig</span></div>
     <div class="t-review">${rows}</div>`;
