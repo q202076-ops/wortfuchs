@@ -1044,7 +1044,7 @@ body.ses-open { overflow: hidden; }
 
 
 /* ---------- Fuchstaler ---------- */
-.ob-foot-row.is-center { justify-content: center; }
+.ob-foot-row.is-center { justify-content: center; flex-wrap: wrap; gap: 0 10px; }
 .tal-gain {
   display: flex; align-items: center; justify-content: center; flex-wrap: wrap; gap: 6px 10px; margin: 0 0 12px; padding: 10px 14px;
   border-radius: 16px; background: var(--card); border: 2px solid var(--rule); font-weight: 500; color: var(--ink-2);
@@ -1296,6 +1296,17 @@ body.ses-open { overflow: hidden; }
 .akt-stand.is-old > span { color: var(--near-deep); }
 .akt-kpis .kpi { background: var(--card-2); border-color: transparent; }
 .akt-kpis .kpi b { font-size: 24px; overflow-wrap: anywhere; }
+
+/* ---------- Fuchs-Code (sichern.js) ---------- */
+.fc-pop .fc-code { margin: 14px 0 6px; }
+.fc-tip { display: flex; align-items: center; justify-content: center; gap: 8px; }
+.fc-tip .ic { width: 20px; height: 20px; flex: none; color: var(--fox); }
+.fc-card .fc-code { margin: 6px 0 4px; }
+.fc-stand { display: flex; align-items: center; justify-content: center; gap: 6px; margin: 0 0 14px; font-size: 14px; font-weight: 500; color: var(--ink-3); }
+.fc-stand .ic { width: 18px; height: 18px; flex: none; color: var(--good); }
+.fc-stand.is-err .ic { color: var(--bad); }
+.fc-card .explain { margin: 0 0 14px; }
+.fc-btns { display: flex; flex-wrap: wrap; gap: 8px; }
 
 @media (prefers-reduced-motion: reduce) {
   *, *::before, *::after { animation-duration: .001ms !important; animation-iteration-count: 1 !important; transition-duration: .001ms !important; scroll-behavior: auto !important; }
@@ -2119,6 +2130,7 @@ const Sync = {
 function commit() {
   saveLocal();
   Sync.mark();
+  fcMark();   // Fuchs-Code (sichern.js)
 }
 </script>
 <script>
@@ -2193,6 +2205,7 @@ const ICONS = {
   'arrow-down': '<path d="M12 5v14M19 12l-7 7-7-7"/>',
   'arrow-left': '<path d="M19 12H5M12 19l-7-7 7-7"/>',
   'delete': '<path d="M21 4H8l-7 8 7 8h13a2 2 0 0 0 2-2V6a2 2 0 0 0-2-2zM18 9l-6 6M12 9l6 6"/>',
+  share: '<path d="M4 12v8a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2v-8M16 6l-4-4-4 4M12 2v13"/>',
 };
 const icon = (n, cls = '') => `<svg class="ic${cls ? ' ' + cls : ''}" viewBox="0 0 24 24" aria-hidden="true" focusable="false">${ICONS[n] || ''}</svg>`;
 
@@ -3242,12 +3255,13 @@ function parentsHTML() {
       ? `<div class="tbl-wrap"><table class="tbl"><thead><tr><th>Englisch</th><th>Deutsch</th><th>Fehler</th><th>Stand</th></tr></thead><tbody>${hardRows}</tbody></table></div>`
       : '<p class="muted">Noch keine Fehler – oder noch nicht geübt.</p>'}</div>
     ${talParentHTML()}
+    ${fcParentHTML()}
     <div class="card"><div class="card-h"><h2>So funktioniert Wortfuchs</h2></div><ul class="explain">
       <li><b>Seiten wählen:</b> Ihr Kind trägt die aufgegebenen Seiten und das Testdatum ein. Die neuen Wörter werden gleichmäßig auf die Tage bis zum Test verteilt.</li>
       <li><b>Stationen:</b> Je etwa 5 Wörter – erst kennenlernen und anhören, dann erkennen, dann selbst schreiben.</li>
       <li><b>Wiederholen mit System:</b> Wörter kommen nach 1, 2, 4 und 7 Tagen wieder, Fehlerwörter sofort – und alle noch einmal am Tag vor dem Test.</li>
       <li><b>Probetest:</b> Wie der echte Test, mit Note (ab 92 % eine 1, ab 81 % eine 2, ab 67 % eine 3, ab 50 % eine 4).</li>
-      <li><b>Speichern:</b> Der Fortschritt wird im Konto gespeichert, wenn das möglich ist – sonst in diesem Browser.</li></ul></div>
+      <li><b>Speichern:</b> Der Fortschritt wird in diesem Browser gespeichert, auf claude.ai zusätzlich im Konto und über die Internet-Adresse zusätzlich per Fuchs-Code.</li></ul></div>
     <div class="card settings"><div class="card-h"><h2>Einstellungen</h2></div>
       <div class="set-row"><div><label class="lbl" for="set-name">Name</label><small>Für die Begrüßung</small></div><input class="field set-name" id="set-name" data-ch="set-name" value="${esc(S.set.name)}" maxlength="20" placeholder="Vorname" autocomplete="off"></div>
       <div class="set-row"><div><span class="lbl">Tagesziel</span></div>${sel('set-goal', S.set.goal, GOALS.map(g => [g, `${fmtN(g)} XP – ${GOAL_TXT[g][0]}`]), 'Tagesziel')}</div>
@@ -3310,7 +3324,7 @@ function renderOnboard() {
     body = `<div class="ob-hero">${fox('happy')}<h1>Hallo, ich bin Fitz!</h1>
       <p class="ob-lead">Lern deine Vokabeln – Station für Station.</p></div>`;
     foot = `<button class="btn btn-primary btn-block" type="button" data-act="ob-next">Los geht's! ${icon('arrow-right')}</button>
-      <div class="ob-foot-row is-center"><button class="btn btn-quiet" type="button" data-act="ob-parent">Ich richte das Eltern-Handy ein</button></div>`;
+      <div class="ob-foot-row is-center">${fcNet() ? '<button class="btn btn-quiet" type="button" data-act="fc-join">Ich habe einen Fuchs-Code</button>' : ''}<button class="btn btn-quiet" type="button" data-act="ob-parent">Ich richte das Eltern-Handy ein</button></div>`;
   } else if (s === 1) {
     body = `<div class="ob-q">${fox()}<h2 id="ob-t">Wie heißt du?</h2></div>
       <input class="field" id="ob-name" data-in="ob-name" value="${esc(OB.name)}" maxlength="20" placeholder="Dein Vorname" autocomplete="off" aria-labelledby="ob-t">
@@ -6629,16 +6643,19 @@ function aktB64(u8) {
 }
 const aktUnB64 = s => Uint8Array.from(atob(s), c => c.charCodeAt(0));
 
-// Kopplungs-Code → AES-GCM-Schlüssel + Ablage-ID (PBKDF2, damit sich der Code nicht durchprobieren lässt)
-async function aktKeys(K) {
-  if (AKT.kk === K && AKT.keys) return AKT.keys;
+// Code → AES-GCM-Schlüssel + Ablage-ID (PBKDF2, damit sich der Code nicht durchprobieren lässt); auch für den Fuchs-Code (sichern.js)
+async function codeKeys(K, salt) {
   const enc = new TextEncoder();
   const base = await crypto.subtle.importKey('raw', enc.encode(K), 'PBKDF2', false, ['deriveBits']);
-  const bits = new Uint8Array(await crypto.subtle.deriveBits({ name: 'PBKDF2', hash: 'SHA-256', salt: enc.encode('wortfuchs-eltern-v1'), iterations: 150000 }, base, 384));
+  const bits = new Uint8Array(await crypto.subtle.deriveBits({ name: 'PBKDF2', hash: 'SHA-256', salt: enc.encode(salt), iterations: 150000 }, base, 384));
   const key = await crypto.subtle.importKey('raw', bits.slice(0, 32), 'AES-GCM', false, ['encrypt', 'decrypt']);
   const id = [...bits.slice(32)].map(b => b.toString(16).padStart(2, '0')).join('');
+  return { key, id };
+}
+async function aktKeys(K) {
+  if (AKT.kk === K && AKT.keys) return AKT.keys;
+  AKT.keys = await codeKeys(K, 'wortfuchs-eltern-v1');
   AKT.kk = K;
-  AKT.keys = { key, id };
   return AKT.keys;
 }
 
@@ -6692,67 +6709,6 @@ async function aktFetch(K) {
 setTimeout(() => aktSend(false), 6000);
 setInterval(() => { if (document.visibilityState === 'visible') aktSend(false); }, 5 * 60e3);
 document.addEventListener('visibilitychange', () => { if (document.visibilityState === 'hidden') aktSend(true); });
-</script>
-<script>
-/* Wortfuchs – Start: Spielstand laden, Tastatur, Speichern im Konto. */
-'use strict';
-
-// ---------- Tastatur ----------
-const TYPE_INPUTS = '.type-in, .gap-in, #t-in';
-document.addEventListener('keydown', e => {
-  if (e.defaultPrevented || e.isComposing) return;
-  const k = e.key, t = e.target;
-  if (Modal.open) {
-    if (k === 'Tab') trapFocus(e, $('#modal-card'));
-    else if (k === 'Escape' && Modal.cur && !Modal.cur.opts.sticky) { e.preventDefault(); Modal.close(); }
-    return;
-  }
-  if (!$('#onboard').hidden) {
-    if (k === 'Tab') trapFocus(e, $('#onboard'));
-    else if (k === 'Enter' && t.id === 'ob-name') { e.preventDefault(); const b = $('#onboard .ob-foot .btn-primary'); if (b) b.click(); }
-    return;
-  }
-  if (SN.on) { snKey(e); return; }
-  if (MG.on) { mgKey(e); return; }
-  if (!SES) return;
-  if (k === 'Tab') { trapFocus(e, $('#session')); return; }
-  if (e.altKey || e.ctrlKey || e.metaKey) return;
-  if (k === 'Escape') { e.preventDefault(); sesQuit(); return; }
-  if (e.repeat) { if (k === 'Enter') e.preventDefault(); return; }
-  if (k === 'Enter') {
-    if (t.matches && t.matches(TYPE_INPUTS)) { e.preventDefault(); sesGo(); return; }
-    if (t.closest && t.closest('button, a, select, input, textarea')) return;   // Knöpfe reagieren selbst
-    e.preventDefault();
-    sesGo();
-    return;
-  }
-  if (t.matches && t.matches('input, textarea, select')) return;
-  if (/^[1-4]$/.test(k) && optKey(+k)) { e.preventDefault(); return; }
-  if ((k === 'Backspace' || k.length === 1) && tileKey(k)) e.preventDefault();
-});
-
-// ---------- Start ----------
-function boot() {
-  S = loadLocal() || fresh();
-  TTS.init();
-  renderTop();
-  go('home');
-  if (!S.onb) openOnboarding();
-
-  // Neuer Stand aus dem Konto (z. B. vom Tablet): neu zeichnen – aber nie mitten in einer Übung
-  Sync.onChange = () => {
-    TTS.pick();
-    if (S.onb && !$('#onboard').hidden) { closeOnboarding(); go('home'); return; }
-    if (!SES && $('#onboard').hidden) refresh();
-  };
-  Sync.onStatus = () => { if (!SES && VIEW === 'awards') VIEWS.awards(false); };
-  Sync.start();
-
-  // Beim Verlassen sofort speichern
-  document.addEventListener('visibilitychange', () => { if (document.visibilityState === 'hidden') { saveLocal(); Sync.flush(); } });
-  addEventListener('pagehide', () => { saveLocal(); Sync.flush(); });
-}
-boot();
 </script>
 <script>
 /* Wortfuchs – Nutzer-Statistik: meldet Vorname, Gerät und Lernstand an die Zählstelle auf Hostinger.
@@ -6821,6 +6777,292 @@ if (MELD.hosts.includes(location.hostname) && !navigator.webdriver) {
   setInterval(() => { if (document.visibilityState === 'visible') meldSend(false); }, 5 * 60e3);
   document.addEventListener('visibilitychange', () => { if (document.visibilityState === 'hidden') meldSend(true); });
 }
+</script>
+<script>
+/* Wortfuchs – Fuchs-Code: Der Spielstand wird verschlüsselt auf der Zählstelle auf Hostinger gesichert (/api/stand),
+   und alle Geräte mit demselben Code bleiben auf demselben Stand (vereint mit mergeState wie beim claude.ai-Konto).
+   Schlüssel und Ablage-ID entstehen per PBKDF2 aus dem Code (codeKeys) – der Server sieht nur Zeichensalat.
+   Der Code entsteht nach dem ersten geübten Wort, Fitz zeigt ihn einmal (mit Home-Bildschirm-Tipp auf iPad/iPhone);
+   eingeben lässt er sich im Willkommen und im Eltern-Bereich. Er liegt in localStorage['wortfuchs.code'], getrennt
+   vom Spielstand, damit „Alles zurücksetzen“ ihn nicht löscht. Nur auf GitHub Pages und Hostinger (wie melden.js);
+   Browser-Tests setzen window.WF_STAND. Dazu: den Browser bitten, den Speicher nicht von selbst zu leeren. */
+'use strict';
+
+const FC = {
+  url: window.WF_STAND || 'https://srv785719.hstgr.cloud/api/stand',
+  key: 'wortfuchs.code',
+  salt: 'wortfuchs-stand-v1',
+  k: '', z: false,             // Code und ob Fitz ihn schon gezeigt hat
+  kk: '', keys: null,          // Schlüssel und Ablage-ID zum Code kk
+  v: 0,                        // Version auf dem Server, auf der unser Stand aufbaut
+  st: '', at: 0,               // '' | ok | err, zuletzt erfolgreich abgeglichen
+  dirty: false, pulled: 0, tm: 0, back: 0, busy: false, again: false, join: false,
+};
+const fcNet = () => !!(window.crypto && crypto.subtle) && (!!window.WF_STAND || (typeof MELD === 'object' && MELD.hosts.includes(location.hostname) && !navigator.webdriver));
+
+function fcLoad() {
+  try {
+    const o = JSON.parse(localStorage.getItem(FC.key) || 'null');
+    if (isObj(o) && typeof o.k === 'string' && pairOk(o.k)) Object.assign(FC, { k: o.k, z: !!o.z });
+  } catch (e) { /* kein Speicher */ }
+}
+function fcStore() {
+  try { localStorage.setItem(FC.key, JSON.stringify({ k: FC.k, z: FC.z })); return true; } catch (e) { return false; }
+}
+async function fcKeys(k) {
+  if (FC.kk !== k || !FC.keys) { FC.keys = await codeKeys(k, FC.salt); FC.kk = k; }
+  return FC.keys;
+}
+
+// ======================= Server =======================
+// → {v, s}: Version und Spielstand (null, wenn zu diesem Code noch nichts liegt)
+async function fcGet(k) {
+  const { key, id } = await fcKeys(k);
+  const r = await fetch(`${FC.url}?id=${id}`, { credentials: 'omit', cache: 'no-store' });
+  if (!r.ok) throw new Error(r.status);
+  const j = await r.json();
+  if (!j.v) return { v: 0, s: null };
+  const p = await crypto.subtle.decrypt({ name: 'AES-GCM', iv: aktUnB64(j.iv) }, key, aktUnB64(j.c));
+  return { v: j.v, s: unpack(JSON.parse(new TextDecoder().decode(p))) };
+}
+// → true gesichert, false: ein anderes Gerät war schneller (erst holen und vereinen)
+async function fcPut(leaving) {
+  const { key, id } = await fcKeys(FC.k);
+  FC.dirty = false;
+  const iv = crypto.getRandomValues(new Uint8Array(12));
+  const c = new Uint8Array(await crypto.subtle.encrypt({ name: 'AES-GCM', iv }, key, new TextEncoder().encode(JSON.stringify(pack(S)))));
+  const body = JSON.stringify({ id, base: FC.v, iv: aktB64(iv), c: aktB64(c) });
+  let r;
+  try { r = await fetch(FC.url, { method: 'POST', body, credentials: 'omit', keepalive: leaving && body.length < 60000 }); } catch (e) { FC.dirty = true; throw e; }
+  if (!r.ok) { FC.dirty = true; throw new Error(r.status); }
+  const j = await r.json();
+  if (j.alt) { FC.dirty = true; return false; }
+  FC.v = j.v;
+  return true;
+}
+
+// Stand vom Server mit S vereinen; true, wenn der Server danach unseren Stand braucht
+function fcTake(remote) {
+  const before = stable(pack(S));
+  S = mergeState(S, remote);
+  const after = stable(pack(S));
+  if (after !== before) { saveLocal(); if (Sync.onChange) Sync.onChange(); }
+  return after !== stable(pack(remote));
+}
+async function fcPull() {
+  const r = await fcGet(FC.k);
+  FC.pulled = Date.now();
+  if (r.s ? fcTake(r.s) : hasProgress()) FC.dirty = true;
+  FC.v = r.v;
+}
+
+// Holen (nie mitten in einer Übung, nie beim Verlassen), dann sichern; bei Konflikt holen, vereinen, noch einmal
+async function fcSync(leaving) {
+  if (!FC.k || !fcNet()) return;
+  if (FC.busy) { FC.again = true; return; }
+  FC.busy = true;
+  clearTimeout(FC.tm);
+  try {
+    if (!leaving && !SES && (!FC.pulled || Date.now() - FC.pulled > 60e3)) await fcPull();
+    for (let i = 0; i < 3 && FC.dirty; i++) {
+      if (await fcPut(leaving)) break;
+      if (leaving || SES) break;   // Konflikt: nach der Übung bzw. beim nächsten Öffnen vereinen
+      await fcPull();
+    }
+    Object.assign(FC, { st: 'ok', at: Date.now(), back: 0 });
+    if (FC.dirty) fcSoon(60e3);
+  } catch (e) {
+    FC.st = 'err';
+    FC.back = Math.min(10 * 60e3, (FC.back || 15e3) * 2);
+    fcSoon(FC.back);
+  }
+  FC.busy = false;
+  if (FC.again) { FC.again = false; fcSoon(); }
+  fcRedraw();
+}
+function fcSoon(ms = 3000) {
+  if (!FC.k) return;
+  clearTimeout(FC.tm);
+  FC.tm = setTimeout(() => fcSync(false), ms);
+}
+
+// Aus commit(): nach dem ersten geübten Wort einen Code anlegen (nicht auf dem Eltern-Handy), dann sichern
+function fcMark() {
+  if (!fcNet()) return;
+  if (!FC.k) {
+    if (parKey() || !Object.keys(S.w).length) return;
+    Object.assign(FC, { k: pairNew(), z: false, v: 0, pulled: Date.now() });
+    if (!fcStore()) { FC.k = ''; return; }   // ohne Speicher wäre der Code gleich wieder weg
+  }
+  FC.dirty = true;
+  fcSoon();
+}
+
+// Code von einem anderen Gerät übernehmen → true, false (kein Stand zum Code); wirft ohne Verbindung
+async function fcJoin(k) {
+  const r = await fcGet(k);
+  if (!r.s) return false;
+  Object.assign(FC, { k, z: true, v: r.v, pulled: Date.now(), st: 'ok', at: Date.now(), dirty: false });
+  fcStore();
+  if (fcTake(r.s)) { FC.dirty = true; fcSoon(500); }
+  return true;
+}
+
+// ======================= Oberfläche =======================
+const fcHomeTip = () => {
+  const ua = navigator.userAgent, ios = /iPad|iPhone/.test(ua) || (/Macintosh/.test(ua) && navigator.maxTouchPoints > 1);
+  let app = navigator.standalone === true;
+  try { app = app || matchMedia('(display-mode: standalone)').matches; } catch (e) { /* alt */ }
+  return ios && !app;
+};
+const fcCodeHTML = () => `<div class="fg-code fg-pair fc-code" role="text" aria-label="Fuchs-Code ${[...FC.k].join(' ')}">${pairFmt(FC.k)}</div>`;
+
+// Einmal zeigen, sobald der Code gesichert ist und das Kind auf der Startseite ist
+function fcHint() {
+  if (!FC.k || FC.z || FC.st !== 'ok' || SES || SN.on || MG.on || Modal.open || VIEW !== 'home' || !$('#onboard').hidden) return;
+  FC.z = true;
+  fcStore();
+  Modal.show(`<div class="fc-pop">${fox('happy')}<h2 id="modal-title">Dein Fuchs-Code</h2>${fcCodeHTML()}
+    <p class="fc-tip">${icon('pencil')}Schreib ihn auf!</p>
+    ${fcHomeTip() ? `<p class="fc-tip">${icon('share')}„Zum Home-Bildschirm“</p>` : ''}</div>
+    <div class="modal-btns"><button class="btn btn-primary" type="button" data-act="modal-close" autofocus>Fertig</button></div>`);
+}
+
+// Eltern-Bereich
+function fcParentHTML() {
+  if (!fcNet()) return '';
+  return `<div class="card fc-card" id="fc-card"><div class="card-h"><h2>Fuchs-Code</h2><span class="kicker">Sicherung</span></div>${fcParentInner()}</div>`;
+}
+function fcParentInner() {
+  const join = `<button class="btn btn-ghost btn-sm" type="button" data-act="fc-join">${icon('pencil')}${FC.k ? 'Anderen Code eingeben' : 'Code eingeben'}</button>`;
+  const tip = '<li><b>iPad:</b> In Safari auf Teilen → „Zum Home-Bildschirm“, dann ist Wortfuchs mit einem Tipp da. Fehlt dort der Fortschritt, einmal den Fuchs-Code eingeben.</li>';
+  if (!FC.k) {
+    return `<p class="muted">Der Code entsteht automatisch nach der ersten Übung. Hat Ihr Kind schon einen Fuchs-Code von einem anderen Gerät, tippen Sie ihn hier ein.</p>
+      <ul class="explain">${tip}</ul><div class="fc-btns">${join}</div>`;
+  }
+  const t = FC.at, d = t && dayNum(new Date(t));
+  const stand = FC.st === 'err' ? `${icon('cloud-off')}Server gerade nicht erreichbar${t ? '' : ' – noch nicht gesichert'}`
+    : t ? `${icon('cloud')}Gesichert: ${d === today() ? 'heute' : d === today() - 1 ? 'gestern' : fmtDay(d)}, ${clockOf(t)}`
+    : `${icon('cloud')}Wird gesichert …`;
+  return `${fcCodeHTML()}<p class="fc-stand${FC.st === 'err' ? ' is-err' : ''}">${stand}</p>
+    <ul class="explain">
+      <li><b>Sicherung:</b> Der Lernstand wird automatisch verschlüsselt auf dem Wortfuchs-Server gesichert. Ohne den Code kann ihn niemand lesen.</li>
+      <li><b>Anderes Gerät oder Stand weg:</b> Wortfuchs öffnen → „Ich habe einen Fuchs-Code“ (oder hier → „Anderen Code eingeben“). Alle Geräte mit demselben Code bleiben auf demselben Stand.</li>
+      <li><b>Bitte notieren</b> – der Code lässt sich nicht wiederherstellen.</li>${tip}</ul>
+    <div class="fc-btns">${navigator.clipboard ? `<button class="btn btn-ghost btn-sm" type="button" data-act="fc-copy">${icon('clipboard-check')}Kopieren</button>` : ''}${join}</div>`;
+}
+function fcRedraw() {
+  const el = $('#fc-card');
+  if (el) el.innerHTML = `<div class="card-h"><h2>Fuchs-Code</h2><span class="kicker">Sicherung</span></div>${fcParentInner()}`;
+}
+ACT['fc-copy'] = () => {
+  navigator.clipboard.writeText(pairFmt(FC.k)).then(() => toast(`${icon('check')}Kopiert`), () => toast('Kopieren ging nicht.'));
+};
+
+// Code eingeben (Willkommen und Eltern-Bereich)
+ACT['fc-join'] = () => {
+  if (!fcNet()) { toast('Das geht nur über die Internet-Adresse von Wortfuchs.'); return; }
+  Modal.show(`<h2 id="modal-title">Fuchs-Code</h2>
+    <form class="gate-row" data-form="fc-join" autocomplete="off"><input class="field code-in" id="fc-in" maxlength="9" placeholder="XXXX-XXXX" autocapitalize="characters" spellcheck="false" aria-label="Fuchs-Code" autofocus>
+    <button class="btn btn-primary" type="submit">OK</button></form>
+    <div class="modal-btns"><button class="btn btn-ghost" type="button" data-act="modal-close">Abbrechen</button></div>`);
+};
+SUB['fc-join'] = async f => {
+  const k = pairNorm($('#fc-in').value);
+  if (!pairOk(k)) { toast('Der Code hat 8 Zeichen, z. B. AB3D-7KQ9.'); return; }
+  if (k === FC.k) { Modal.close(); toast(`${icon('check')}Schon verbunden`); return; }
+  if (FC.join) return;
+  FC.join = true;
+  const b = f.querySelector('button');
+  b.setAttribute('aria-busy', 'true');
+  try {
+    if (await fcJoin(k)) {
+      Modal.close();
+      fcRedraw();
+      Sfx.play('win');
+      toast(`${icon('check')}Willkommen zurück${S.set.name ? ', ' + esc(S.set.name) : ''}!`);
+    } else toast('Diesen Code kenne ich nicht.');
+  } catch (e) { toast('Keine Verbindung. Versuch es später noch mal.'); }
+  b.removeAttribute('aria-busy');
+  FC.join = false;
+};
+
+// ======================= Start =======================
+fcLoad();
+if (fcNet()) {
+  try { if (navigator.storage && navigator.storage.persist) navigator.storage.persisted().then(p => p || navigator.storage.persist()).catch(() => {}); } catch (e) { /* alt */ }
+  if (FC.k) setTimeout(() => fcSync(false), 1500);
+  setInterval(() => {
+    if (document.visibilityState !== 'visible') return;
+    if (FC.k && !SES && Date.now() - FC.pulled > 5 * 60e3) fcSync(false);
+    fcHint();
+  }, 3000);
+  document.addEventListener('visibilitychange', () => {
+    if (document.visibilityState === 'hidden') { if (FC.dirty) fcSync(true); }
+    else if (FC.k && Date.now() - FC.pulled > 30e3) fcSync(false);
+  });
+}
+</script>
+<script>
+/* Wortfuchs – Start: Spielstand laden, Tastatur, Speichern im Konto. */
+'use strict';
+
+// ---------- Tastatur ----------
+const TYPE_INPUTS = '.type-in, .gap-in, #t-in';
+document.addEventListener('keydown', e => {
+  if (e.defaultPrevented || e.isComposing) return;
+  const k = e.key, t = e.target;
+  if (Modal.open) {
+    if (k === 'Tab') trapFocus(e, $('#modal-card'));
+    else if (k === 'Escape' && Modal.cur && !Modal.cur.opts.sticky) { e.preventDefault(); Modal.close(); }
+    return;
+  }
+  if (!$('#onboard').hidden) {
+    if (k === 'Tab') trapFocus(e, $('#onboard'));
+    else if (k === 'Enter' && t.id === 'ob-name') { e.preventDefault(); const b = $('#onboard .ob-foot .btn-primary'); if (b) b.click(); }
+    return;
+  }
+  if (SN.on) { snKey(e); return; }
+  if (MG.on) { mgKey(e); return; }
+  if (!SES) return;
+  if (k === 'Tab') { trapFocus(e, $('#session')); return; }
+  if (e.altKey || e.ctrlKey || e.metaKey) return;
+  if (k === 'Escape') { e.preventDefault(); sesQuit(); return; }
+  if (e.repeat) { if (k === 'Enter') e.preventDefault(); return; }
+  if (k === 'Enter') {
+    if (t.matches && t.matches(TYPE_INPUTS)) { e.preventDefault(); sesGo(); return; }
+    if (t.closest && t.closest('button, a, select, input, textarea')) return;   // Knöpfe reagieren selbst
+    e.preventDefault();
+    sesGo();
+    return;
+  }
+  if (t.matches && t.matches('input, textarea, select')) return;
+  if (/^[1-4]$/.test(k) && optKey(+k)) { e.preventDefault(); return; }
+  if ((k === 'Backspace' || k.length === 1) && tileKey(k)) e.preventDefault();
+});
+
+// ---------- Start ----------
+function boot() {
+  S = loadLocal() || fresh();
+  TTS.init();
+  renderTop();
+  go('home');
+  if (!S.onb) openOnboarding();
+
+  // Neuer Stand aus dem Konto (z. B. vom Tablet): neu zeichnen – aber nie mitten in einer Übung
+  Sync.onChange = () => {
+    TTS.pick();
+    if (S.onb && !$('#onboard').hidden) { closeOnboarding(); go('home'); return; }
+    if (!SES && $('#onboard').hidden) refresh();
+  };
+  Sync.onStatus = () => { if (!SES && VIEW === 'awards') VIEWS.awards(false); };
+  Sync.start();
+
+  // Beim Verlassen sofort speichern
+  document.addEventListener('visibilitychange', () => { if (document.visibilityState === 'hidden') { saveLocal(); Sync.flush(); } });
+  addEventListener('pagehide', () => { saveLocal(); Sync.flush(); });
+}
+boot();
 </script>
 
 </body>
